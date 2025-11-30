@@ -121,6 +121,40 @@ The application features a fully translated user interface supporting dynamic la
 -   **Translation Key Pattern:** All new keys follow format `module.specific_key` (e.g., `simulations.loan_amount`, `inflation_control.data_source`, `family_mode.family_hub`)
 -   **Variable Naming:** Always use named variables in map functions to avoid conflicts with translation function `t` (e.g., `transaction` instead of `t`)
 
+## Deployment
+
+### Ubuntu Production Deployment (Single Command)
+
+The project includes a complete autonomous installation script (`deploy.sh`) for Ubuntu servers that handles:
+
+✅ **Automatic Setup**
+- Node.js 20.x installation
+- PostgreSQL server with pgAdmin4 admin interface
+- Application dependencies
+- Database creation and user setup
+- Systemd service with auto-restart
+- Environment configuration (`.env.production`)
+- Production build
+
+✅ **Single Command Installation**
+```bash
+sudo bash deploy.sh
+```
+
+✅ **Configuration Options**
+- Local PostgreSQL (default)
+- External PostgreSQL URLs (Render, Neon, AWS RDS)
+- AI provider API keys
+- Custom port configuration
+
+✅ **Post-Installation**
+- Application runs at: `http://server-ip:5000`
+- Auto-restart on crash
+- Logs via: `sudo journalctl -u gestor-financeiro -f`
+- Easy updates and maintenance
+
+For detailed installation guide, see `INSTALL.md`
+
 ## External Dependencies
 -   **AI Providers:**
     -   **Google Gemini:** Requires API key, supports audio and image processing.
@@ -130,4 +164,4 @@ The application features a fully translated user interface supporting dynamic la
 -   **Libraries:**
     -   `jszip`: For ZIP file generation/parsing in export/import system.
     -   `jspdf` + `jspdf-autotable`: For PDF exports.
--   **Database:** PostgreSQL with Neon backend.
+-   **Database:** PostgreSQL with local or cloud backends (Neon, Render, AWS RDS).
