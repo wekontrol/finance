@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Gestão Financeira</title>
+    <link rel="stylesheet" href="/global.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind via CDN para dev rápido, mas o ideal seria via PostCSS no build. 
+         Mantendo CDN para garantir compatibilidade com o setup atual sem quebrar estilos. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            },
+            colors: {
+              // Sobrescrevendo Slate (azulado) por Zinc (Cinza Neutro) para remover o tom azulado
+              slate: {
+                50: '#fafafa',
+                100: '#f4f4f5',
+                200: '#e4e4e7',
+                300: '#d4d4d8',
+                400: '#a1a1aa',
+                500: '#71717a',
+                600: '#52525b',
+                700: '#3f3f46',
+                800: '#27272a', // Cinza escuro neutro (antigo card azulado)
+                900: '#18181b', // Quase preto
+                950: '#09090b', // Preto profundo
+              },
+              primary: {
+                50: '#f5f3ff',
+                100: '#ede9fe',
+                200: '#ddd6fe',
+                300: '#c4b5fd',
+                400: '#a78bfa',
+                500: '#8b5cf6', // Violet
+                600: '#7c3aed',
+                700: '#6d28d9',
+                800: '#5b21b6',
+                900: '#4c1d95',
+              },
+              secondary: {
+                50: '#ecfdf5',
+                100: '#d1fae5',
+                500: '#10b981', // Emerald
+                600: '#059669',
+              },
+              dark: {
+                bg: '#09090b', // Zinc 950
+                card: '#18181b', // Zinc 900
+                text: '#f4f4f5',
+              }
+            },
+            boxShadow: {
+              'soft': '0 10px 40px -10px rgba(0, 0, 0, 0.08)',
+              'glow': '0 0 20px rgba(139, 92, 246, 0.25)',
+              'inner-light': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.3)',
+            },
+            zIndex: {
+              '60': '60',
+              '70': '70',
+              '100': '100',
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+              'slide-left': 'slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              'scale-in': 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+              'bounce-slow': 'bounce 3s infinite',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              slideLeft: {
+                '0%': { transform: 'translateX(100%)' },
+                '100%': { transform: 'translateX(0)' },
+              },
+              scaleIn: {
+                '0%': { transform: 'scale(0.95)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { 
+        font-family: 'Plus Jakarta Sans', sans-serif; 
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+      
+      /* Modern Minimal Scrollbar */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 99px;
+        transition: background 0.2s;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+      
+      .dark ::-webkit-scrollbar-thumb {
+        background: #27272a;
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+      }
+
+      /* Firefox Scrollbar */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+      .dark * {
+        scrollbar-color: #27272a transparent;
+      }
+
+      /* Prevent pull-to-refresh on mobile but allow scroll */
+      body {
+        overscroll-behavior-y: none;
+      }
+      
+      /* Smooth transitions for all colors */
+      * {
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, transform;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+      }
+
+      /* Remove Safari Input Shadow */
+      input[type="text"], input[type="number"], input[type="password"], input[type="email"], select, textarea {
+        -webkit-appearance: none;
+        appearance: none;
+      }
+    </style>
+    
+    <!-- PDF.js Worker Configuration -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    
+    <!-- Puter.js - Free Unlimited AI, Cloud Storage, and Database -->
+    <script src="https://js.puter.com/v2/"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.0",
+    "jspdf": "https://aistudiocdn.com/jspdf@^3.0.4",
+    "jspdf-autotable": "https://aistudiocdn.com/jspdf-autotable@^5.0.2",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-50 dark:bg-[#09090b] text-slate-800 dark:text-slate-100 antialiased selection:bg-primary-500 selection:text-white h-screen overflow-hidden">
+    <div id="root" class="h-full"></div>
+    <!-- Entry Point Correto para o Vite -->
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

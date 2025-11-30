@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: gestor-financeiro
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000

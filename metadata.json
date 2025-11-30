@@ -1,0 +1,8 @@
+{
+  "name": "Gestor Financeiro Familiar V1.4",
+  "description": "Uma aplicação completa para gestão financeira familiar com IA, painéis interativos e controle de metas.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}

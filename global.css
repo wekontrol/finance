@@ -1,0 +1,88 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* Enhanced transitions */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Button hover effects */
+button {
+  @apply active:scale-95 transition-all duration-200;
+}
+
+/* Card hover lift effect */
+.card-hover {
+  @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary-600 to-emerald-600 bg-clip-text text-transparent;
+}
+
+/* Smooth fade transitions */
+.fade-enter {
+  @apply animate-fade-in;
+}
+
+.slide-up-enter {
+  @apply animate-slide-up;
+}
+
+/* Glass morphism effect */
+.glass {
+  @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/50;
+}
+
+/* Input focus enhanced */
+input:focus,
+textarea:focus,
+select:focus {
+  @apply ring-2 ring-primary-500/50 shadow-lg shadow-primary-500/10;
+}
+
+/* Loading pulse */
+.loading-pulse {
+  @apply animate-pulse-soft;
+}
+
+/* Glow effect */
+.glow {
+  @apply shadow-lg shadow-primary-500/30 dark:shadow-primary-400/20;
+}
+
+/* Interactive cards */
+.interactive-card {
+  @apply card-hover rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer;
+}
+
+/* Badge animations */
+.badge {
+  @apply inline-block px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200;
+}
+
+.badge:hover {
+  @apply scale-105 shadow-md;
+}
