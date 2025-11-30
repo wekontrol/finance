@@ -1,0 +1,37 @@
+root@hermantest:/home/herman/finance# sudo systemctl status gestor-financeiro
+● gestor-financeiro.service - Gestor Financeiro Familiar - Node.js Application
+     Loaded: loaded (/etc/systemd/system/gestor-financeiro.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-11-30 17:16:24 UTC; 3min 49s ago
+   Main PID: 30084 (npm start)
+      Tasks: 42 (limit: 2267)
+     Memory: 73.3M (peak: 100.9M)
+        CPU: 1.706s
+     CGroup: /system.slice/gestor-financeiro.service
+             ├─30084 "npm start"
+             ├─30095 sh -c "NODE_ENV=production tsx server/index.ts"
+             ├─30096 node /var/www/gestor-financeiro/node_modules/.bin/tsx server/index.ts
+             ├─30107 /usr/bin/node --require /var/www/gestor-financeiro/node_modules/tsx/dist/preflight.cjs --import file:///var/www/gestor-financeiro/node>
+             └─30119 /var/www/gestor-financeiro/node_modules/tsx/node_modules/@esbuild/linux-x64/bin/esbuild --service=0.25.12 --ping
+
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: ✓ Synced 501 keys for fr
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Database initialized successfully
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Warning: connect.session() MemoryStore is not
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: designed for a production environment, as it will leak
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: memory, and will not scale past a single process.
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Server running on port 5000
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Running in production mode
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: ⚠️  TheFinance not set - using memory store (not recommended for production)
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: 📅 [Budget Scheduler] Started - auto-saves history every 30 minutes
+Nov 30 17:18:46 hermantest gestor-financeiro[30107]: [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+lines 1-24/24 (END)
+root@hermantest:/home/herman/finance# sudo journalctl -u gestor-financeiro -f
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: ✓ Synced 501 keys for fr
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Database initialized successfully
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Warning: connect.session() MemoryStore is not
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: designed for a production environment, as it will leak
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: memory, and will not scale past a single process.
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Server running on port 5000
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: Running in production mode
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: ⚠️  TheFinance not set - using memory store (not recommended for production)
+Nov 30 17:16:28 hermantest gestor-financeiro[30107]: 📅 [Budget Scheduler] Started - auto-saves history every 30 minutes
+Nov 30 17:18:46 hermantest gestor-financeiro[30107]: [GET /rates] Live rates fetched. USD->AOA: 914.77623369
