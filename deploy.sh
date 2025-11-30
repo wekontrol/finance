@@ -147,6 +147,23 @@ EOF
 
 log_success "PostgreSQL database '$DB_NAME' created and user '$DB_USER' configured"
 
+# Step 6.5: Apply database schema
+log_step "6.5/10" "Creating database schema..."
+if [ -f "$APP_DIR/server/db/postgres-schema.sql" ]; then
+    PGPASSWORD=gestor2024!Secure psql -U $DB_USER -h localhost -d $DB_NAME -f "$APP_DIR/server/db/postgres-schema.sql" 2>/dev/null
+    
+    # Create default admin user
+    PGPASSWORD=gestor2024!Secure psql -U $DB_USER -h localhost -d $DB_NAME <<EOF_DATA
+INSERT INTO users (id, username, password, name, role, avatar, status, family_id, language_preference)
+VALUES ('u0', 'admin', '\$2a\$10\$K6FXnr1QxXQm7k1Q7z6QCu0Q0Q0Q0Q0Q0Q0Q0Q0Q0Q0Q0Q0Q0Q0Q0', 'Super Admin', 'SUPER_ADMIN', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Super', 'APPROVED', 'fam_admin', 'pt')
+ON CONFLICT DO NOTHING;
+EOF_DATA
+    
+    log_success "Database schema created and initialized"
+else
+    log_warning "Schema file not found, skipping schema creation"
+fi
+
 # Step 7: Install Node.js dependencies
 log_step "7/10" "Installing Node.js dependencies..."
 sudo -u $APP_USER sh -c 'cd $APP_DIR && rm -rf node_modules dist package-lock.json 2>/dev/null || true'

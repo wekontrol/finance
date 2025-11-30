@@ -18,14 +18,14 @@ function initDB() {
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
     });
-    console.log('✅ Using PostgreSQL for all data');
+    console.log('🗄️ DATABASE MODE: PostgreSQL (production)');
     return pgPool;
   } else {
     usePostgres = false;
     const dbPath = path.join(process.cwd(), 'data.db');
     db = new Database(dbPath);
     db.pragma('journal_mode = WAL');
-    console.log('✅ Using SQLite for all data');
+    console.log('🗄️ DATABASE MODE: SQLite (development)');
     return db;
   }
 }
@@ -34,9 +34,15 @@ const db_instance = initDB();
 
 /**
  * Sync translations from JSON files to database
- * Ensures database is always up-to-date with translation files
+ * SQLite only - PostgreSQL handles this via deploy.sh
  */
 function syncTranslationsFromJSON() {
+  // Only sync if using SQLite (development)
+  if (usePostgres) {
+    console.log('⏭️ Skipping translations sync - PostgreSQL uses deploy.sh migrations');
+    return;
+  }
+
   const localesPath = path.join(process.cwd(), 'public', 'locales');
   const languages = ['pt', 'en', 'es', 'um', 'ln', 'fr'];
   
@@ -76,8 +82,18 @@ function syncTranslationsFromJSON() {
 }
 
 export function initializeDatabase() {
+  // PostgreSQL: Skip table creation (deploy.sh handles it)
+  if (usePostgres) {
+    console.log('✅ Using external PostgreSQL - tables created by deploy.sh');
+    return;
+  }
+
+  // SQLite: Create all tables and run migrations
+  console.log('📦 Initializing SQLite database schema...');
+
   // Sync translations from JSON files first
   syncTranslationsFromJSON();
+  
   // Migrations: Add missing columns if they don't exist
   try {
     db.exec(`ALTER TABLE api_configurations ADD COLUMN is_default INTEGER DEFAULT 0;`);
