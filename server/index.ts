@@ -1,8 +1,16 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
 import path from 'path';
 import { initializeDatabase } from './db/schema';
+
+// Load environment variables from .env.production in production
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: path.join(process.cwd(), '.env.production') });
+} else {
+  dotenv.config();
+}
 import pgPool, { initializeSessionsTable } from './db/postgres';
 import ConnectPgSimple from 'connect-pg-simple';
 import authRoutes from './routes/auth';
