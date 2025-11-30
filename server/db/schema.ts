@@ -1,12 +1,36 @@
 import Database from 'better-sqlite3';
+import { Pool } from 'pg';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 
-const dbPath = path.join(process.cwd(), 'data.db');
-const db = new Database(dbPath);
+let db: any = null;
+let pgPool: Pool | null = null;
+let usePostgres = false;
 
-db.pragma('journal_mode = WAL');
+// Initialize database based on environment
+function initDB() {
+  if (process.env.NODE_ENV === 'production' && process.env.TheFinance) {
+    usePostgres = true;
+    pgPool = new Pool({
+      connectionString: process.env.TheFinance,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+    console.log('✅ Using PostgreSQL for all data');
+    return pgPool;
+  } else {
+    usePostgres = false;
+    const dbPath = path.join(process.cwd(), 'data.db');
+    db = new Database(dbPath);
+    db.pragma('journal_mode = WAL');
+    console.log('✅ Using SQLite for all data');
+    return db;
+  }
+}
+
+const db_instance = initDB();
 
 /**
  * Sync translations from JSON files to database
