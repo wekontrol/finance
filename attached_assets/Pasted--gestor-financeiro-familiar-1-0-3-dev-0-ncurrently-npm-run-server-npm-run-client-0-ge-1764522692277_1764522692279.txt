@@ -1,0 +1,101 @@
+
+> gestor-financeiro-familiar@1.0.3 dev
+[0] ncurrently "npm run server" "npm run client"
+[0] > gestor-financeiro-familiar@1.0.3 server
+[0] > tsx watch server/index.ts
+[0] 
+[1] 
+[1] > gestor-financeiro-familiar@1.0.3 client
+[1] > vite
+[1] 
+[1] 
+[1]   VITE v5.4.21  ready in 554 ms
+[1] 
+[1]   ➜  Local:   http://localhost:5000/
+[1]   ➜  Network: http://172.31.94.226:5000/
+[0] Error syncing pt translations: no such table: translations
+[0] Error syncing en translations: no such table: translations
+[0] Error syncing es translations: no such table: translations
+[0] Error syncing um translations: no such table: translations
+[0] Error syncing ln translations: no such table: translations
+[0] Error syncing fr translations: no such table: translations
+[0] 📚 Found languages: en, es, fr, ln, pt, um
+[0] ✅ Translations loaded from JSON files
+[0] Database initialized successfully
+[0] Server running on port 3001
+[0] Running in development mode
+[0] 📅 [Budget Scheduler] Started - auto-saves history every 30 minutes
+[0] [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+[0] [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+[0] [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+[0] [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+[0] [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+[0] [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+[0] Auto-saved budget history for user u0: 0 categories from 2025-10
+[0] [GET /api-config] Provider: google_gemini
+[0] [GET /api-config] No config found for google_gemini
+[0] [GET /api-config] Provider: google_gemini
+[0] [GET /api-config] No config found for google_gemini
+[0] [GET /api-configs] User role: SUPER_ADMIN
+[0] [GET /api-configs] Found configs: []
+[0] [GET /default-currency-provider] Error: SqliteError: no such column: currency_provider_preference
+[0]     at Database.prepare (/home/runner/workspace/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+[0]     at <anonymous> (/home/runner/workspace/server/routes/settings.ts:201:23)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at next (/home/runner/workspace/node_modules/router/lib/route.js:157:13)
+[0]     at Route.dispatch (/home/runner/workspace/node_modules/router/lib/route.js:117:3)
+[0]     at handle (/home/runner/workspace/node_modules/router/index.js:435:11)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at /home/runner/workspace/node_modules/router/index.js:295:15
+[0]     at processParams (/home/runner/workspace/node_modules/router/index.js:582:12)
+[0]     at next (/home/runner/workspace/node_modules/router/index.js:291:5) {
+[0]   code: 'SQLITE_ERROR'
+[0] }
+[0] [GET /default-currency-provider] Error: SqliteError: no such column: currency_provider_preference
+[0]     at Database.prepare (/home/runner/workspace/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+[0]     at <anonymous> (/home/runner/workspace/server/routes/settings.ts:201:23)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at next (/home/runner/workspace/node_modules/router/lib/route.js:157:13)
+[0]     at Route.dispatch (/home/runner/workspace/node_modules/router/lib/route.js:117:3)
+[0]     at handle (/home/runner/workspace/node_modules/router/index.js:435:11)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at /home/runner/workspace/node_modules/router/index.js:295:15
+[0]     at processParams (/home/runner/workspace/node_modules/router/index.js:582:12)
+[0]     at next (/home/runner/workspace/node_modules/router/index.js:291:5) {
+[0]   code: 'SQLITE_ERROR'
+[0] }
+[0] [GET /api-configs] User role: SUPER_ADMIN
+[0] [GET /api-configs] Found configs: []
+[0] [GET /default-currency-provider] Error: SqliteError: no such column: currency_provider_preference
+[0]     at Database.prepare (/home/runner/workspace/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+[0]     at <anonymous> (/home/runner/workspace/server/routes/settings.ts:201:23)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at next (/home/runner/workspace/node_modules/router/lib/route.js:157:13)
+[0]     at Route.dispatch (/home/runner/workspace/node_modules/router/lib/route.js:117:3)
+[0]     at handle (/home/runner/workspace/node_modules/router/index.js:435:11)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at /home/runner/workspace/node_modules/router/index.js:295:15
+[0]     at processParams (/home/runner/workspace/node_modules/router/index.js:582:12)
+[0]     at next (/home/runner/workspace/node_modules/router/index.js:291:5) {
+[0]   code: 'SQLITE_ERROR'
+[0] }
+[0] [GET /api-configs] User role: SUPER_ADMIN
+[0] [GET /api-configs] Found configs: []
+[0] [GET /api-configs] User role: SUPER_ADMIN
+[0] [GET /api-configs] Found configs: []
+[0] [GET /default-currency-provider] Error: SqliteError: no such column: currency_provider_preference
+[0]     at Database.prepare (/home/runner/workspace/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+[0]     at <anonymous> (/home/runner/workspace/server/routes/settings.ts:201:23)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at next (/home/runner/workspace/node_modules/router/lib/route.js:157:13)
+[0]     at Route.dispatch (/home/runner/workspace/node_modules/router/lib/route.js:117:3)
+[0]     at handle (/home/runner/workspace/node_modules/router/index.js:435:11)
+[0]     at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+[0]     at /home/runner/workspace/node_modules/router/index.js:295:15
+[0]     at processParams (/home/runner/workspace/node_modules/router/index.js:582:12)
+[0]     at next (/home/runner/workspace/node_modules/router/index.js:291:5) {
+[0]   code: 'SQLITE_ERROR'
+[0] }
+[0] [GET /rates] Live rates fetched. USD->AOA: 914.77623369
+^C[0] npm run server exited with code SIGINT
+[1] npm run client exited with code SIGINT
