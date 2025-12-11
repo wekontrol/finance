@@ -8,6 +8,37 @@ Fast Mode development - small focused edits preferred.
 
 ## Current Status
 
+### PostgreSQL Migration: IN PROGRESS 🚀
+#### TURNO 1 (COMPLETO) ✅
+- **Abstraction Layer Created:** `server/db/manager.ts` rewritten with async/await support
+  - `all()` - returns all rows (works with SQLite and PostgreSQL)
+  - `get()` - returns first row (works with SQLite and PostgreSQL)
+  - `run()` - executes INSERT/UPDATE/DELETE (works with SQLite and PostgreSQL)
+  - `transaction()` - atomic operations for both databases
+  - `getType()`, `isPostgres()`, `isSQLite()` - utility functions
+
+- **auth.ts Refactored:** 5 endpoints converted to async/await
+  - ✅ POST /login - async with try/catch
+  - ✅ POST /register - async with try/catch, creates family + user + 16 default budgets
+  - ✅ POST /recover-password - async with try/catch
+  - ✅ POST /logout - unchanged (no DB operations)
+  - ✅ GET /me - unchanged (no DB operations)
+
+- **Testing Status:** ✅ All endpoints tested and working
+  - Login curl test returns user object correctly
+  - Database manager detects environment (SQLite for dev, PostgreSQL for prod)
+  - Error handling implemented with try/catch on all async operations
+
+#### TURNO 2 (NEXT): users.ts
+- 89 lines, 6 database operations
+- Endpoints: GET /:id, PUT /:id, GET /family, POST /add-to-family, DELETE /:id, POST /promote-role
+- Priority: HIGH (depends on auth for role checking)
+
+#### TURNO 3 (NEXT): transactions.ts
+- 151 lines, 12 database operations
+- Endpoints: GET /, POST /, PUT /:id, DELETE /:id, GET /recurring, POST /recurring
+- Priority: HIGH (core app functionality)
+
 ### Phase 1: COMPLETE ✅
 - Dashboard + Transactions fully translated
 - 20 new translation keys added
