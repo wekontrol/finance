@@ -1007,10 +1007,9 @@ const Transactions: React.FC<TransactionsProps> = ({
                           setSortDirection('asc');
                         }
                       }}
-                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2"
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition whitespace-nowrap"
                     >
-                      {t("transactions.transaction_header")}
-                      {sortBy === 'description' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                      {t("transactions.transaction_header")} {sortBy === 'description' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th 
                       onClick={() => {
@@ -1021,10 +1020,9 @@ const Transactions: React.FC<TransactionsProps> = ({
                           setSortDirection('asc');
                         }
                       }}
-                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2"
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition whitespace-nowrap"
                     >
-                      {t("transactions.category_header")}
-                      {sortBy === 'category' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                      {t("transactions.category_header")} {sortBy === 'category' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th 
                       onClick={() => {
@@ -1035,10 +1033,9 @@ const Transactions: React.FC<TransactionsProps> = ({
                           setSortDirection('desc');
                         }
                       }}
-                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2"
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition whitespace-nowrap"
                     >
-                      {t("common.date")}
-                      {sortBy === 'date' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                      {t("common.date")} {sortBy === 'date' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th 
                       onClick={() => {
@@ -1049,10 +1046,9 @@ const Transactions: React.FC<TransactionsProps> = ({
                           setSortDirection('asc');
                         }
                       }}
-                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center justify-end gap-2"
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition whitespace-nowrap"
                     >
-                      {t("common.value")}
-                      {sortBy === 'amount' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                      {t("common.value")} {sortBy === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">{t("transactions.actions_header")}</th>
                   </tr>
