@@ -138,6 +138,16 @@ export const budgetApi = {
       body: JSON.stringify({})
     });
     return handleResponse(response);
+  },
+
+  reset: async () => {
+    const response = await fetch(`${API_BASE}/budget/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({})
+    });
+    return handleResponse(response);
   }
 };
 

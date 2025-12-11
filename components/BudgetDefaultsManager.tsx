@@ -22,6 +22,7 @@ const BudgetDefaultsManager: React.FC<BudgetDefaultsManagerProps> = ({
   const [categories, setCategories] = useState<BudgetCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -81,9 +82,28 @@ const BudgetDefaultsManager: React.FC<BudgetDefaultsManagerProps> = ({
     }
   };
 
-  const handleReset = () => {
-    if (confirm('Tem certeza que deseja resetar para os valores padrão?')) {
-      loadDefaults();
+  const handleReset = async () => {
+    if (confirm('Tem certeza que deseja resetar TODOS os orçamentos para os valores padrão? Esta ação não pode ser desfeita.')) {
+      setIsResetting(true);
+      try {
+        const response = await fetch('/api/budget/reset', {
+          method: 'POST',
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          alert('✅ Orçamentos resetados com sucesso! Você agora tem 16 categorias padrão.');
+          loadDefaults();
+          window.location.reload();
+        } else {
+          alert('Erro ao resetar orçamentos');
+        }
+      } catch (error) {
+        console.error('Error resetting budgets:', error);
+        alert('Erro ao resetar: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      } finally {
+        setIsResetting(false);
+      }
     }
   };
 
@@ -140,11 +160,11 @@ const BudgetDefaultsManager: React.FC<BudgetDefaultsManagerProps> = ({
           <div className="sticky bottom-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-6 flex gap-3 justify-end">
             <button
               onClick={handleReset}
-              disabled={isSaving}
-              className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 font-bold transition disabled:opacity-50 flex items-center gap-2"
+              disabled={isSaving || isResetting}
+              className="px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 font-bold transition disabled:opacity-50 flex items-center gap-2"
             >
-              <RotateCcw size={18} />
-              Reset
+              {isResetting ? <Loader2 size={18} className="animate-spin" /> : <RotateCcw size={18} />}
+              {isResetting ? 'Resetando...' : 'Resetar Tudo'}
             </button>
             <button
               onClick={onClose}

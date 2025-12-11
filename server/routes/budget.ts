@@ -458,6 +458,39 @@ router.post('/defaults', async (req: Request, res: Response) => {
   }
 });
 
+// Reset budgets - delete all duplicates and recreate from scratch
+router.post('/reset', async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    // Delete ALL budgets for this user
+    await db.run(`DELETE FROM budget_limits WHERE user_id = ?`, [userId]);
+    
+    // Recreate the 16 default budgets
+    const defaultBudgets = getSystemDefaults();
+    let created = 0;
+
+    for (const budget of defaultBudgets) {
+      const budgetId = `bl${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
+      await db.run(`
+        INSERT INTO budget_limits (id, user_id, category, limit_amount, is_default)
+        VALUES (?, ?, ?, ?, 1)
+      `, [budgetId, userId, budget.category, budget.limit]);
+      created++;
+    }
+
+    console.log(`✅ Reset budgets for user ${userId}: Deleted old, created ${created} new budgets`);
+    res.json({ message: `Reset complete. Created ${created} default budgets`, created });
+  } catch (error: any) {
+    console.error('Reset budgets error:', error);
+    res.status(500).json({ error: 'Failed to reset budgets', details: error.message });
+  }
+});
+
 function getSystemDefaults() {
   return [
     { category: 'Renda', limit: 0 },
