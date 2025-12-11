@@ -308,9 +308,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const requestNotificationPermission = async () => {
-    if (!("Notification" in window)) return alert("Navegador sem suporte.");
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") new Notification(appName, { body: "Notificações ativadas!" });
+    try {
+      if (!("Notification" in window)) {
+        alert("Seu navegador não suporta notificações.");
+        return;
+      }
+      
+      if (Notification.permission === "granted") {
+        // Permissão já concedida - mostrar notificação de teste
+        if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: "SHOW_NOTIFICATION",
+            title: appName,
+            options: {
+              body: "✅ Notificações funcionando perfeitamente!",
+              icon: "/icon.png",
+              badge: "/icon.png"
+            }
+          });
+        } else {
+          new Notification(appName, { 
+            body: "✅ Notificações funcionando perfeitamente!" 
+          });
+        }
+        alert("✅ Notificação de teste enviada!");
+        return;
+      }
+      
+      if (Notification.permission !== "denied") {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          new Notification(appName, { 
+            body: "✅ Notificações ativadas com sucesso!" 
+          });
+          alert("✅ Notificações ativadas!");
+        } else {
+          alert("❌ Permissão de notificação negada.");
+        }
+      } else {
+        alert("⚠️ Notificações foram bloqueadas. Altere as permissões do seu navegador.");
+      }
+    } catch (error: any) {
+      console.error("Erro ao requisitar permissão de notificação:", error);
+      alert("❌ Erro ao testar notificações: " + error.message);
+    }
   };
 
   const handleResetData = () => {
