@@ -102,13 +102,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [termsContent, setTermsContent] = useState('');
   const [termsInput, setTermsInput] = useState('');
 
-  // API Configurations State
-  const [apiConfigs, setApiConfigs] = useState<any[]>([]);
-  const [apiConfigsLoading, setApiConfigsLoading] = useState(false);
-  const [editingConfig, setEditingConfig] = useState<any>(null);
-  const [newConfigProvider, setNewConfigProvider] = useState('');
-  const [newConfigKey, setNewConfigKey] = useState('');
-  const [newConfigModel, setNewConfigModel] = useState('');
+  // Terms State
   const [termsLoading, setTermsLoading] = useState(false);
 
   // System Update State
@@ -148,7 +142,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(() => {
     if (isSuperAdmin) {
       loadFamilies();
-      loadApiConfigs();
     }
   }, [isSuperAdmin]);
 
@@ -161,91 +154,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       console.error('Error loading families:', error);
     } finally {
       setFamiliesLoading(false);
-    }
-  };
-
-  const loadApiConfigs = async () => {
-    setApiConfigsLoading(true);
-    try {
-      const response = await fetch('/api/settings/api-configs', { credentials: 'include' });
-      if (response.ok) {
-        const data = await response.json();
-        setApiConfigs(data);
-      }
-    } catch (error) {
-      console.error('Error loading API configs:', error);
-    } finally {
-      setApiConfigsLoading(false);
-    }
-  };
-
-  const handleSaveApiConfig = async () => {
-    console.log('handleSaveApiConfig called');
-    console.log('Provider:', newConfigProvider);
-    console.log('Key:', newConfigKey ? '***' + newConfigKey.slice(-4) : 'EMPTY');
-    
-    if (!newConfigProvider || !newConfigKey) {
-      alert('Preenchimento obrigatório: Provedor e Chave de API');
-      return;
-    }
-
-    try {
-      const payload = {
-        id: editingConfig?.id || null,
-        provider: newConfigProvider,
-        apiKey: newConfigKey,
-        model: newConfigModel
-      };
-      
-      console.log('Payload to send:', { ...payload, apiKey: '***' });
-
-      const response = await fetch('/api/settings/api-configs', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('Success response:', responseData);
-        setKeySaved(true);
-        setTimeout(() => setKeySaved(false), 2000);
-        setNewConfigProvider('');
-        setNewConfigKey('');
-        setNewConfigModel('');
-        setEditingConfig(null);
-        loadApiConfigs();
-      } else {
-        const errorText = await response.text();
-        console.error('Save API Config Error:', response.status, errorText);
-        alert('Erro ao salvar chave: ' + errorText);
-      }
-    } catch (error) {
-      console.error('Save API Config Exception:', error);
-      alert('Erro ao salvar chave: ' + (error as Error).message);
-    }
-  };
-
-  const handleDeleteApiConfig = async (id: string) => {
-    if (!confirm('Tem certeza que deseja deletar esta configuração?')) return;
-
-    try {
-      const response = await fetch(`/api/settings/api-configs/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        loadApiConfigs();
-      } else {
-        alert('Erro ao deletar configuração');
-      }
-    } catch (error) {
-      alert('Erro ao deletar: ' + (error as Error).message);
     }
   };
 
@@ -1459,154 +1367,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
-        {/* 9. API Configurations (Only Super Admin) */}
+        {/* 9. Currency Providers Section */}
         {isSuperAdmin && (
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div onClick={() => toggleSection('api-configs')} className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+            <div onClick={() => toggleSection('currency')} className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg mr-4 shrink-0"><Key size={20} /></div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white">🔑 {t("admin.api_settings")}</h3>
+                <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg mr-4 shrink-0"><ArrowRightLeft size={20} /></div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white">{t('common.conversion_providers') || 'Provedores de Conversão'}</h3>
               </div>
-              {expandedSection === 'api-configs' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              {expandedSection === 'currency' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </div>
-            {expandedSection === 'api-configs' && (
-              <div className="p-8 border-t border-slate-100 dark:border-slate-700 animate-slide-down space-y-6">
-                {/* Add/Edit Form */}
-                <div className="bg-slate-50 dark:bg-slate-900/30 p-6 rounded-2xl space-y-4">
-                  <h4 className="font-bold text-slate-800 dark:text-white">{editingConfig ? t("admin.edit_config") : t("admin.add_new_config")}</h4>
-                  
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">Provedor</label>
-                    <select 
-                      value={newConfigProvider} 
-                      onChange={(e) => setNewConfigProvider(e.target.value)}
-                      disabled={!!editingConfig}
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white disabled:opacity-50"
-                    >
-                      <option value="">Selecione um provedor</option>
-                      <option value="google_gemini">Google Gemini</option>
-                      <option value="openrouter">OpenRouter</option>
-                      <option value="puter">Puter</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">API Key</label>
-                    <input 
-                      type="password" 
-                      value={newConfigKey}
-                      onChange={(e) => setNewConfigKey(e.target.value)}
-                      placeholder="Sua chave de API"
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">Modelo (Opcional)</label>
-                    <input 
-                      type="text" 
-                      value={newConfigModel}
-                      onChange={(e) => setNewConfigModel(e.target.value)}
-                      placeholder="Ex: openai/gpt-4-turbo"
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white"
-                    />
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={handleSaveApiConfig}
-                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition flex items-center justify-center gap-2"
-                    >
-                      <Save size={16} /> {editingConfig ? 'Atualizar' : 'Salvar'}
-                    </button>
-                    {editingConfig && (
-                      <button 
-                        onClick={() => {
-                          setEditingConfig(null);
-                          setNewConfigProvider('');
-                          setNewConfigKey('');
-                          setNewConfigModel('');
-                        }}
-                        className="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 rounded-lg font-bold transition"
-                      >
-                        Cancelar
-                      </button>
-                    )}
-                  </div>
-
-                  {keySaved && (
-                    <div className="bg-green-100 border border-green-300 text-green-700 px-4 py-2 rounded-lg flex items-center gap-2">
-                      <CheckCircle size={16} /> Configuração salva com sucesso!
-                    </div>
-                  )}
-                </div>
-
-                {/* Configurations List */}
-                {apiConfigsLoading ? (
-                  <div className="text-center py-4 text-slate-600">
-                    <Loader2 className="animate-spin inline" size={20} /> Carregando...
-                  </div>
-                ) : apiConfigs.length === 0 ? (
-                  <p className="text-center text-slate-600 dark:text-slate-400 py-4">Nenhuma configuração de API cadastrada</p>
-                ) : (
-                  <div className="space-y-3">
-                    {apiConfigs.map((config: any) => (
-                      <div key={config.id} className="bg-slate-50 dark:bg-slate-900/30 p-4 rounded-lg flex justify-between items-center">
-                        <div>
-                          <p className="font-bold text-slate-800 dark:text-white capitalize">{config.provider.replace('_', ' ')}</p>
-                          {config.model && <p className="text-xs text-slate-600 dark:text-slate-400">Modelo: {config.model}</p>}
-                          <p className="text-xs text-slate-500 dark:text-slate-500">Criado em: {new Date(config.created_at).toLocaleDateString()}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => {
-                              setEditingConfig(config);
-                              setNewConfigProvider(config.provider);
-                              setNewConfigKey('');
-                              setNewConfigModel(config.model || '');
-                            }}
-                            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-bold transition"
-                          >
-                            <Edit size={16} className="inline mr-1" /> Editar
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteApiConfig(config.id)}
-                            className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-bold transition"
-                          >
-                            <Trash2 size={16} className="inline mr-1" /> Deletar
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Currency Providers Section */}
-            {isSuperAdmin && (
-              <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-                <div onClick={() => toggleSection('currency')} className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg mr-4 shrink-0"><ArrowRightLeft size={20} /></div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">{t('common.conversion_providers') || 'Provedores de Conversão'}</h3>
-                  </div>
-                  {expandedSection === 'currency' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </div>
-                {expandedSection === 'currency' && (
-                  <div className="p-8 border-t border-slate-100 dark:border-slate-700 animate-slide-down">
-                    <CurrencyProviderSettings 
-                      currentProvider={currencyProvider as any}
-                      onProviderChange={(provider) => setCurrencyProvider(provider as any)}
-                    />
-                  </div>
-                )}
+            {expandedSection === 'currency' && (
+              <div className="p-8 border-t border-slate-100 dark:border-slate-700 animate-slide-down">
+                <CurrencyProviderSettings 
+                  currentProvider={currencyProvider as any}
+                  onProviderChange={(provider) => setCurrencyProvider(provider as any)}
+                />
               </div>
             )}
           </div>
         )}
 
-        {/* 10. Excel Models Management (Only Super Admin) */}
+        {/* 9. Excel Models Management (Only Super Admin) */}
         {isSuperAdmin && (
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
             <div onClick={() => toggleSection('models')} className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
