@@ -130,10 +130,15 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
         const data = e.target?.result;
         const workbook = XLSX.read(data, { type: 'binary' });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
+        
+        // Ler apenas do intervalo A9:G124 (dados das transações)
+        const rows = XLSX.utils.sheet_to_json(worksheet, {
+          header: 0,
+          range: 'A9:G124'
+        });
 
         if (rows.length === 0) {
-          reject(new Error('Arquivo Excel vazio'));
+          reject(new Error('Nenhuma transação encontrada no intervalo A9:G124'));
           return;
         }
 
