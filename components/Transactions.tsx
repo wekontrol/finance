@@ -392,6 +392,7 @@ const Transactions: React.FC<TransactionsProps> = ({
     
     setShowForm(false);
     setEditingId(null);
+    setCurrentPage(1);  // Reset to first page to see new transaction
     setFormData({ description: '', amount: '', type: TransactionType.EXPENSE, category: '', date: new Date().toISOString().split('T')[0], attachments: [], isRecurring: false, frequency: 'monthly' });
   };
 
@@ -401,7 +402,8 @@ const Transactions: React.FC<TransactionsProps> = ({
       t.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (activeTab === 'subscriptions' ? t.isRecurring : !t.isRecurring)
     );
-    return filtered;
+    // Sort by date (most recent first)
+    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, searchTerm, activeTab]);
 
   React.useEffect(() => {

@@ -254,7 +254,8 @@ const App: React.FC = () => {
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     try {
       const newTransaction = await transactionsApi.create(transaction);
-      setTransactions([...transactions, newTransaction]);
+      // Add new transaction at the beginning (most recent)
+      setTransactions([newTransaction, ...transactions]);
     } catch (error) {
       console.error('Error adding transaction:', error);
     }
