@@ -3,7 +3,7 @@ import { Transaction, TransactionType, TransactionAttachment } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { categorizeTransaction, parseTransactionFromText, parseTransactionFromAudio, parseTransactionFromReceipt } from '../services/aiProviderService';
 import { exportTransactionsToExcel, downloadExcelTemplate, importTransactionsFromExcel } from '../services/excelService';
-import { Plus, Paperclip, Loader2, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle, Search, Sparkles, Mic, Square, RefreshCw, CalendarClock, CreditCard, X, ChevronLeft, ChevronRight, FileText, FileSpreadsheet, UploadCloud, File as FileIcon, Download, Camera, Check, RotateCcw } from 'lucide-react';
+import { Plus, Paperclip, Loader2, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle, Search, Sparkles, Mic, Square, RefreshCw, CalendarClock, CreditCard, X, ChevronLeft, ChevronRight, FileText, FileSpreadsheet, UploadCloud, File as FileIcon, Download, Camera, Check, RotateCcw, ArrowDown, ArrowUp } from 'lucide-react';
 
 interface TransactionsProps {
   transactions: Transaction[];
@@ -36,6 +36,8 @@ const Transactions: React.FC<TransactionsProps> = ({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [maxFileSize, setMaxFileSize] = useState(12);
   const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'description' | 'category'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   
   const [smartInput, setSmartInput] = useState('');
   const [isProcessingSmart, setIsProcessingSmart] = useState(false);
@@ -459,9 +461,29 @@ const Transactions: React.FC<TransactionsProps> = ({
       t.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (activeTab === 'subscriptions' ? t.isRecurring : !t.isRecurring)
     );
-    // Sort by date (most recent first)
-    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions, searchTerm, activeTab]);
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      let compareValue = 0;
+      
+      switch (sortBy) {
+        case 'date':
+          compareValue = new Date(a.date).getTime() - new Date(b.date).getTime();
+          break;
+        case 'amount':
+          compareValue = a.amount - b.amount;
+          break;
+        case 'description':
+          compareValue = a.description.localeCompare(b.description);
+          break;
+        case 'category':
+          compareValue = a.category.localeCompare(b.category);
+          break;
+      }
+      
+      return sortDirection === 'asc' ? compareValue : -compareValue;
+    });
+  }, [transactions, searchTerm, activeTab, sortBy, sortDirection]);
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -976,10 +998,62 @@ const Transactions: React.FC<TransactionsProps> = ({
                         className="w-5 h-5 rounded cursor-pointer"
                       />
                     </th>
-                    <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider">{t("transactions.transaction_header")}</th>
-                    <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider">{t("transactions.category_header")}</th>
-                    <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider">{t("common.date")}</th>
-                    <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">{t("common.value")}</th>
+                    <th 
+                      onClick={() => {
+                        if (sortBy === 'description') {
+                          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy('description');
+                          setSortDirection('asc');
+                        }
+                      }}
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2"
+                    >
+                      {t("transactions.transaction_header")}
+                      {sortBy === 'description' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </th>
+                    <th 
+                      onClick={() => {
+                        if (sortBy === 'category') {
+                          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy('category');
+                          setSortDirection('asc');
+                        }
+                      }}
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2"
+                    >
+                      {t("transactions.category_header")}
+                      {sortBy === 'category' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </th>
+                    <th 
+                      onClick={() => {
+                        if (sortBy === 'date') {
+                          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy('date');
+                          setSortDirection('desc');
+                        }
+                      }}
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2"
+                    >
+                      {t("common.date")}
+                      {sortBy === 'date' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </th>
+                    <th 
+                      onClick={() => {
+                        if (sortBy === 'amount') {
+                          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy('amount');
+                          setSortDirection('asc');
+                        }
+                      }}
+                      className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center justify-end gap-2"
+                    >
+                      {t("common.value")}
+                      {sortBy === 'amount' && (sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </th>
                     <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">{t("transactions.actions_header")}</th>
                   </tr>
                 </thead>
