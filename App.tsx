@@ -282,7 +282,7 @@ const App: React.FC = () => {
   const addGoal = async (goal: Omit<SavingsGoal, 'id'>) => {
     try {
       const newGoal = await goalsApi.create(goal);
-      setGoals([...goals, newGoal]);
+      setGoals([newGoal, ...goals]);
     } catch (error) {
       console.error('Error adding goal:', error);
     }
@@ -325,7 +325,9 @@ const App: React.FC = () => {
   const saveBudget = async (budget: BudgetLimit) => {
     try {
       const result = await budgetApi.saveBudget(budget);
-      setBudgets([...budgets.filter(b => b !== budget), result]);
+      // Add new budget at beginning, remove old one if exists
+      const filtered = budgets.filter(b => b.category !== budget.category);
+      setBudgets([result, ...filtered]);
     } catch (error) {
       console.error('Error saving budget:', error);
     }
@@ -385,7 +387,7 @@ const App: React.FC = () => {
   const handleAddUser = async (userData: Omit<User, 'id'>) => {
     try {
       const newUser = await usersApi.create(userData);
-      setAllUsers([...allUsers, newUser]);
+      setAllUsers([newUser, ...allUsers]);
     } catch (error) {
       console.error('Error adding user:', error);
     }
@@ -422,7 +424,7 @@ const App: React.FC = () => {
   const addFamilyTask = async (task: Omit<FamilyTask, 'id'>) => {
     try {
       const newTask = await familyApi.createTask(task);
-      setFamilyTasks([...familyTasks, newTask]);
+      setFamilyTasks([newTask, ...familyTasks]);
     } catch (error) {
       console.error('Error adding task:', error);
     }
@@ -449,7 +451,7 @@ const App: React.FC = () => {
   const addFamilyEvent = async (event: Omit<FamilyEvent, 'id'>) => {
     try {
       const newEvent = await familyApi.createEvent(event);
-      setFamilyEvents([...familyEvents, newEvent]);
+      setFamilyEvents([newEvent, ...familyEvents]);
     } catch (error) {
       console.error('Error adding event:', error);
     }
@@ -465,8 +467,9 @@ const App: React.FC = () => {
   };
 
   const saveSimulation = async (simulation: SavedSimulation) => {
-    setSavedSimulations([...savedSimulations, simulation]);
-    localStorage.setItem('savedSimulations', JSON.stringify([...savedSimulations, simulation]));
+    const updated = [simulation, ...savedSimulations];
+    setSavedSimulations(updated);
+    localStorage.setItem('savedSimulations', JSON.stringify(updated));
   };
 
   const deleteSimulation = async (simulationId: string) => {
