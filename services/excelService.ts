@@ -159,18 +159,20 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
         const workbook = XLSX.read(data, { type: 'binary' });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         
-        // Ler do intervalo A2:G1000 (dados das transações começam na linha 2)
+        // Ler do intervalo A9:G124 (A9 contém headers, A10:G124 contém dados)
         const rows = XLSX.utils.sheet_to_json(worksheet, {
           header: 0,
-          range: 'A2:G1000'
+          range: 'A9:G124'
         });
 
         if (rows.length === 0) {
-          reject(new Error('Nenhuma transação válida encontrada no arquivo'));
+          reject(new Error('Nenhuma transação encontrada no intervalo A10:G124'));
           return;
         }
 
         const transactions: Omit<Transaction, 'id'>[] = [];
+
+        const validationErrors: string[] = [];
 
         (rows as any[]).forEach((row, index) => {
           try {
@@ -196,7 +198,7 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
 
             // Validar e converter data (aceita DD/MM/YYYY ou YYYY-MM-DD)
             if (!date) {
-              console.warn(`Linha ${index + 2}: Data vazia`);
+              validationErrors.push(`Linha ${index + 10}: Data vazia`);
               return;
             }
             
@@ -205,19 +207,19 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
               const [day, month, year] = date.split('/');
               date = `${year}-${month}-${day}`;
             } else if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-              console.warn(`Linha ${index + 2}: Data inválida: ${date}. Use DD/MM/YYYY`);
+              validationErrors.push(`Linha ${index + 10}: Data inválida: ${date}. Use DD/MM/YYYY ou YYYY-MM-DD`);
               return;
             }
 
             // Validar descrição
             if (!description) {
-              console.warn(`Linha ${index + 2}: Descrição vazia`);
+              validationErrors.push(`Linha ${index + 10}: Descrição vazia`);
               return;
             }
 
             // Validar valor
             if (isNaN(amount) || amount <= 0) {
-              console.warn(`Linha ${index + 2}: Valor inválido: ${row['Valor']}`);
+              validationErrors.push(`Linha ${index + 10}: Valor inválido: "${row[valKey]}". Use números positivos (ex: 50.50)`);
               return;
             }
 
@@ -263,7 +265,10 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
         });
 
         if (transactions.length === 0) {
-          reject(new Error('Nenhuma transação válida encontrada no arquivo'));
+          const errorMsg = validationErrors.length > 0 
+            ? `Nenhuma transação válida encontrada. Erros:\n${validationErrors.slice(0, 5).join('\n')}${validationErrors.length > 5 ? `\n... e ${validationErrors.length - 5} mais erros` : ''}`
+            : 'Nenhuma transação encontrada no arquivo';
+          reject(new Error(errorMsg));
           return;
         }
 
