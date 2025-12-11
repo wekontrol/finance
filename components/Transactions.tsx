@@ -16,7 +16,7 @@ interface TransactionsProps {
 }
 
 const ITEMS_PER_PAGE = 10;
-const MAX_FILE_SIZE = 12 * 1024 * 1024; // 12MB
+let MAX_FILE_SIZE = 12 * 1024 * 1024; // 12MB default
 
 const Transactions: React.FC<TransactionsProps> = ({ 
   transactions, 
@@ -34,6 +34,7 @@ const Transactions: React.FC<TransactionsProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [maxFileSize, setMaxFileSize] = useState(12);
   
   const [smartInput, setSmartInput] = useState('');
   const [isProcessingSmart, setIsProcessingSmart] = useState(false);
@@ -63,6 +64,25 @@ const Transactions: React.FC<TransactionsProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputClass = "w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-medium focus:ring-2 focus:ring-primary-500 outline-none transition-all";
+
+  // Load max file size from server
+  useEffect(() => {
+    const loadMaxFileSize = async () => {
+      try {
+        const response = await fetch('/api/settings/max-file-size', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setMaxFileSize(data.maxFileSize || 12);
+          MAX_FILE_SIZE = (data.maxFileSize || 12) * 1024 * 1024;
+        }
+      } catch (error) {
+        console.error('Error loading max file size:', error);
+      }
+    };
+    loadMaxFileSize();
+  }, []);
 
   // Cleanup camera on unmount
   useEffect(() => {

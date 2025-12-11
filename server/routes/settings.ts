@@ -381,4 +381,39 @@ router.get('/rates/:provider', async (req: Request, res: Response) => {
   }
 });
 
+// Get max file size (default 12MB)
+router.get('/max-file-size', async (req: Request, res: Response) => {
+  try {
+    const setting = await db.get(`SELECT value FROM app_settings WHERE key = 'max_file_size'`);
+    const maxFileSize = setting ? parseInt(setting.value) : 12;
+    res.json({ maxFileSize });
+  } catch (error: any) {
+    console.error('Error fetching max file size:', error);
+    res.json({ maxFileSize: 12 });
+  }
+});
+
+// Set max file size (Super Admin only)
+router.post('/max-file-size', async (req: Request, res: Response) => {
+  if (req.session?.user?.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ error: 'Super Admin only' });
+  }
+  
+  try {
+    const { maxFileSize } = req.body;
+    const size = Math.min(Math.max(parseInt(maxFileSize) || 12, 1), 100); // Between 1-100 MB
+    
+    await db.run(`
+      INSERT INTO app_settings (key, value) 
+      VALUES (?, ?)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value
+    `, ['max_file_size', size.toString()]);
+    
+    res.json({ success: true, maxFileSize: size });
+  } catch (error: any) {
+    console.error('Error setting max file size:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

@@ -63,6 +63,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   // Currency Provider State
   const [currencyProvider, setCurrencyProvider] = useState<'BNA' | 'FOREX' | 'PARALLEL'>('BNA');
   
+  // Max File Size State (in MB)
+  const [maxFileSize, setMaxFileSize] = useState(12);
+  const [localMaxFileSize, setLocalMaxFileSize] = useState(12);
+  
   // Load currency provider on mount
   useEffect(() => {
     const loadCurrencyProvider = async () => {
@@ -79,6 +83,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       }
     };
     loadCurrencyProvider();
+    
+    // Load max file size
+    const loadMaxFileSize = async () => {
+      try {
+        const response = await fetch('/api/settings/max-file-size', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setMaxFileSize(data.maxFileSize || 12);
+          setLocalMaxFileSize(data.maxFileSize || 12);
+        }
+      } catch (error) {
+        console.error('Error loading max file size:', error);
+      }
+    };
+    loadMaxFileSize();
   }, []);
   
   // Gemini State
@@ -220,8 +241,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     return false;
   };
 
-  const handleGeneralSave = () => {
+  const handleGeneralSave = async () => {
     setAppName(localAppName);
+    
+    // Save max file size if it changed
+    if (localMaxFileSize !== maxFileSize && localMaxFileSize > 0 && localMaxFileSize <= 100) {
+      try {
+        const response = await fetch('/api/settings/max-file-size', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ maxFileSize: localMaxFileSize })
+        });
+        if (response.ok) {
+          setMaxFileSize(localMaxFileSize);
+        }
+      } catch (error) {
+        alert('Erro ao salvar limite de arquivo: ' + error);
+        return;
+      }
+    }
+    
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -478,6 +518,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Nome do App</label>
                      <div className="flex gap-3">
                        <input type="text" value={localAppName} onChange={(e) => setLocalAppName(e.target.value)} className={inputClass} />
+                       <button onClick={handleGeneralSave} className="bg-slate-800 text-white px-6 rounded-xl font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-500/20">{isSaved ? 'OK' : 'Salvar'}</button>
+                     </div>
+                   </div>
+                   <div>
+                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Limite Máx. Anexo (MB)</label>
+                     <div className="flex gap-3">
+                       <input type="number" min="1" max="100" value={localMaxFileSize} onChange={(e) => setLocalMaxFileSize(parseInt(e.target.value) || 12)} className={inputClass} />
                        <button onClick={handleGeneralSave} className="bg-slate-800 text-white px-6 rounded-xl font-bold hover:bg-slate-700 transition shadow-lg shadow-slate-500/20">{isSaved ? 'OK' : 'Salvar'}</button>
                      </div>
                    </div>
