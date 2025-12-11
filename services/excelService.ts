@@ -146,8 +146,27 @@ const generateExcelTemplate = (language: string = 'pt') => {
 };
 
 /**
+ * Converte número de data do Excel para YYYY-MM-DD
+ * Excel armazena datas como números (ex: 45000 = data específica)
+ */
+const excelDateToISO = (excelDateNum: number): string => {
+  // Excel epoch é 30/12/1899
+  const excelEpoch = new Date(1899, 11, 30);
+  const millisecondsPerDay = 86400000;
+  const jsDate = new Date(excelEpoch.getTime() + excelDateNum * millisecondsPerDay);
+  
+  const year = jsDate.getFullYear();
+  const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+  const day = String(jsDate.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * Importa transações de um arquivo Excel
  * Suporta idiomas: português (pt), espanhol (es), umbundu (um)
+ * A10:A124 são tratados como Data (aceita número Excel ou texto)
+ * D10:D124 são tratados como Número (aceita números direto)
  */
 export const importTransactionsFromExcel = (file: File, language: string = 'pt'): Promise<Omit<Transaction, 'id'>[]> => {
   return new Promise((resolve, reject) => {
@@ -188,28 +207,54 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
             const recurKey = isSpanish ? 'Recurrente' : isUmbundu ? 'Odula' : 'Recorrente';
             const freqKey = isSpanish ? 'Frecuencia' : isUmbundu ? 'Olambi' : 'Frequência';
 
-            let date = String(row[dateKey] || '').trim();
-            const description = String(row[descKey] || '').trim();
-            const category = String(row[catKey] || (isSpanish ? 'General' : isUmbundu ? 'Ongolo' : 'Geral')).trim();
-            const amount = parseFloat(String(row[valKey] || '0'));
-            const typeStr = String(row[typeKey] || (isSpanish ? 'Gasto' : isUmbundu ? 'Okutula' : 'Despesa')).trim().toLowerCase();
-            const isRecurringStr = String(row[recurKey] || (isSpanish ? 'No' : isUmbundu ? 'Okilá' : 'Não')).trim().toLowerCase();
-            let frequency = String(row[freqKey] || 'monthly').trim().toLowerCase();
-
-            // Validar e converter data (aceita DD/MM/YYYY ou YYYY-MM-DD)
-            if (!date) {
+            // ===== COLUNA A: DATA =====
+            // Excel pode armazenar como número (data formatada) ou texto
+            let dateRaw = row[dateKey];
+            let date = '';
+            
+            if (!dateRaw && dateRaw !== 0) {
               validationErrors.push(`Linha ${index + 10}: Data vazia`);
               return;
             }
             
-            // Detectar e converter formato DD/MM/YYYY para YYYY-MM-DD
-            if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
-              const [day, month, year] = date.split('/');
-              date = `${year}-${month}-${day}`;
-            } else if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-              validationErrors.push(`Linha ${index + 10}: Data inválida: ${date}. Use DD/MM/YYYY ou YYYY-MM-DD`);
-              return;
+            // Se for número, converter de data Excel
+            if (typeof dateRaw === 'number') {
+              try {
+                date = excelDateToISO(dateRaw);
+              } catch (e) {
+                validationErrors.push(`Linha ${index + 10}: Data numérica inválida: ${dateRaw}`);
+                return;
+              }
+            } else {
+              // Se for texto, converter os formatos conhecidos
+              date = String(dateRaw).trim();
+              
+              // Detectar e converter formato DD/MM/YYYY para YYYY-MM-DD
+              if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+                const [day, month, year] = date.split('/');
+                date = `${year}-${month}-${day}`;
+              } else if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                validationErrors.push(`Linha ${index + 10}: Data inválida: "${date}". Use DD/MM/YYYY, YYYY-MM-DD, ou coluna formatada como data no Excel`);
+                return;
+              }
             }
+
+            // ===== COLUNAS B-G: OUTROS DADOS =====
+            const description = String(row[descKey] || '').trim();
+            const category = String(row[catKey] || (isSpanish ? 'General' : isUmbundu ? 'Ongolo' : 'Geral')).trim();
+            
+            // COLUNA D: VALOR (aceita número direto do Excel)
+            let amount = 0;
+            const amountRaw = row[valKey];
+            if (typeof amountRaw === 'number') {
+              amount = amountRaw;
+            } else {
+              amount = parseFloat(String(amountRaw || '0'));
+            }
+            
+            const typeStr = String(row[typeKey] || (isSpanish ? 'Gasto' : isUmbundu ? 'Okutula' : 'Despesa')).trim().toLowerCase();
+            const isRecurringStr = String(row[recurKey] || (isSpanish ? 'No' : isUmbundu ? 'Okilá' : 'Não')).trim().toLowerCase();
+            let frequency = String(row[freqKey] || 'monthly').trim().toLowerCase();
 
             // Validar descrição
             if (!description) {
@@ -219,7 +264,7 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
 
             // Validar valor
             if (isNaN(amount) || amount <= 0) {
-              validationErrors.push(`Linha ${index + 10}: Valor inválido: "${row[valKey]}". Use números positivos (ex: 50.50)`);
+              validationErrors.push(`Linha ${index + 10}: Valor inválido: "${amountRaw}". Use números positivos (ex: 50.50)`);
               return;
             }
 

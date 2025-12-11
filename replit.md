@@ -34,23 +34,23 @@ The application features a fully translated user interface supporting dynamic la
 -   **Currency API:** Fawaz Ahmed Currency API (CDN-hosted).
 ---
 
-## 📊 EXCEL IMPORT/EXPORT SYSTEM (Turn 8 + Turn 21 FIX)
+## 📊 EXCEL IMPORT/EXPORT SYSTEM (Turn 8 + Turn 21-22 FIXES)
 
-**Status:** ✅ FULLY IMPLEMENTED & CRITICAL BUG FIXED
+**Status:** ✅ FULLY IMPLEMENTED & ALL BUGS FIXED
 **Last Updated:** December 11, 2025
 
 ### Features Implemented
 1. **Excel Import**
    - ✅ Button "Importar" (purple, UploadCloud icon)
    - ✅ Accepts .xlsx and .xls files
-   - ✅ Automatic validation (date, description, amount)
+   - ✅ Automatic validation with detailed error messages
    - ✅ Parser using XLSX library
    - ✅ Bulk import with success feedback
    - ✅ Auto-reset to page 1 after import
 
 2. **Excel Template Download**
    - ✅ Button "Modelo" (blue, Download icon)
-   - ✅ Downloads custom uploaded template (NOW FIXED!)
+   - ✅ Downloads custom uploaded template (FIXED in Turn 21!)
    - ✅ If no custom template exists, generates default
    - ✅ Portuguese instructions included
    - ✅ Formatted columns with proper widths
@@ -63,9 +63,16 @@ The application features a fully translated user interface supporting dynamic la
    - ✅ Persists across sessions
    - ✅ GET endpoint serves stored template
 
-4. **Excel Structure**
-   - Headers: Data, Descrição, Categoria, Valor, Tipo, Recorrente, Frequência
-   - Data format: YYYY-MM-DD
+4. **Smart Data Type Handling (NEW - Turn 22)**
+   - ✅ **Coluna A (Data):** Detecta datas em formato numérico Excel e converte automaticamente
+   - ✅ Aceita formatos: YYYY-MM-DD, DD/MM/YYYY, ou coluna formatada como data
+   - ✅ **Coluna D (Valor):** Aceita números diretos do Excel sem conversão
+   - ✅ Mais leniente com validação - converte automaticamente
+
+5. **Excel Structure**
+   - Headers (A9): Data, Descrição, Categoria, Valor, Tipo, Recorrente, Frequência
+   - Data range: **A10:G124** (115 linhas disponíveis)
+   - Data format: Pode ser DD/MM/YYYY, YYYY-MM-DD, ou número formatado no Excel
    - Tipo: "Receita" or "Despesa"
    - Recorrente: "Sim" or "Não"
 
@@ -75,18 +82,33 @@ The application features a fully translated user interface supporting dynamic la
 **Solution:** Modified `server/routes/templates.ts` to force filename `modelo_transacoes.xlsx` regardless of input
 **Testing:** GET endpoint returns HTTP 200 with correct file (16,617 bytes)
 
+### TURN 22 IMPORT FIXES ✅
+**Problem:** Excel cells com formatação de "número" ou "data" eram rejeitadas como inválidas
+**Solutions:**
+1. Função `excelDateToISO()` converte números de data Excel (serial numbers) para YYYY-MM-DD
+2. Coluna D (Valor) agora aceita números diretamente sem conversão string
+3. Mensagens de erro detalhadas mostram exatamente qual linha está com problema
+4. Validação de linha corrigida: mostra linha real do Excel (A10 = linha 10, não linha 2)
+
 ### Files Modified
-- ✅ `services/excelService.ts` - Service with import/export functions
-- ✅ `components/Transactions.tsx` - 3 buttons (Modelo, Importar, CSV)
-- ✅ `server/routes/templates.ts` - **FIX: Filename standardization**
+- ✅ `services/excelService.ts` - Smart import + date conversion + better error messages
+- ✅ `server/routes/templates.ts` - Filename standardization
+- ✅ `components/Transactions.tsx` - UI for Modelo/Importar buttons
 - ✅ `package.json` - xlsx library
 
 ### How to Use (Now Works Correctly!)
-1. (Optional) Settings > Gerenciar Modelos Excel > Upload custom template
-2. Transactions > Modelo > Downloads your custom template (or default)
-3. Fill your transactions in Excel
-4. Transactions > Importar > Upload and auto-import all transactions
-5. System validates and shows success count
+1. **Prepare your Excel file:**
+   - Coluna A (Data): Selecione as células > Botão direito > "Formatar Células" > "Data"
+   - Coluna D (Valor): Selecione as células > Botão direito > "Formatar Células" > "Número"
+   
+2. **Download or upload template:**
+   - (Optional) Settings > Gerenciar Modelos Excel > Upload seu modelo customizado
+   - Transactions > Modelo > Download do template padrão ou customizado
+
+3. **Fill and import:**
+   - Preencha suas transações em Excel (linhas 10-124)
+   - Transactions > Importar > Upload do seu arquivo
+   - Sistema valida e mostra contagem de sucesso
 
 ---
 
