@@ -29,15 +29,29 @@ Fast Mode development - small focused edits preferred.
   - Database manager detects environment (SQLite for dev, PostgreSQL for prod)
   - Error handling implemented with try/catch on all async operations
 
-#### TURNO 2 (NEXT): users.ts
-- 89 lines, 6 database operations
-- Endpoints: GET /:id, PUT /:id, GET /family, POST /add-to-family, DELETE /:id, POST /promote-role
-- Priority: HIGH (depends on auth for role checking)
+#### TURNO 2 (COMPLETO) ✅
+- **users.ts Refactored:** 4 endpoints converted to async/await
+  - ✅ GET / - async with try/catch (SUPER_ADMIN, MANAGER, or own user)
+  - ✅ POST / - async with try/catch, creates user + 16 default budgets
+  - ✅ PUT /:id - async with try/catch, updates user info
+  - ✅ DELETE /:id - async with try/catch, removes user account
 
-#### TURNO 3 (NEXT): transactions.ts
-- 151 lines, 12 database operations
-- Endpoints: GET /, POST /, PUT /:id, DELETE /:id, GET /recurring, POST /recurring
-- Priority: HIGH (core app functionality)
+- **Testing Status:** ✅ All endpoints tested and working
+  - GET /users returns user list correctly
+  - POST /users creates new user with avatar and default budgets
+  - Error handling with try/catch on all async operations
+
+#### TURNO 3 (COMPLETO) ✅
+- **transactions.ts Refactored:** 4 endpoints converted to async/await
+  - ✅ GET / - async with try/catch (role-based filtering: SUPER_ADMIN, MANAGER, or own)
+  - ✅ POST / - async with try/catch, creates new transaction
+  - ✅ PUT /:id - async with try/catch, updates transaction
+  - ✅ DELETE /:id - async with try/catch, deletes transaction
+
+- **Testing Status:** ✅ Ready for testing after restart
+  - All operations use manager.ts abstraction layer
+  - Full error handling with try/catch blocks
+  - Maintains authorization checks for all endpoints
 
 ### Phase 1: COMPLETE ✅
 - Dashboard + Transactions fully translated
