@@ -34,6 +34,62 @@ The application features a fully translated user interface supporting dynamic la
 -   **Currency API:** Fawaz Ahmed Currency API (CDN-hosted).
 ---
 
+## 🤖 AI INSIGHTS SYSTEM (6 IA TOOLS) - December 11, 2025 ✅
+
+**Status:** ✅ FULLY IMPLEMENTED
+**Location:** Planificação & IA > 6 Abas Interativas
+
+### Features Implemented
+1. **📊 Análise Inteligente de Gastos**
+   - Categoria com maior gasto (top spending)
+   - Todas as categorias ordenadas por valor
+   - ⚠️ Detecção de anomalias (30% acima do normal)
+
+2. **📈 Previsão de Fluxo de Caixa**
+   - Gasto médio diário (últimos 30 dias)
+   - Projeção mensal automática
+   - Saldo projetado (positivo/negativo)
+
+3. **💪 Score de Saúde Financeira**
+   - Pontuação 0-100 visual
+   - Tendência (Melhorando/Estável/Piorando)
+   - Penalidades por overspending e anomalias
+
+4. **💰 Sugestões de Economia Personalizadas**
+   - Reduzir gastos em categorias principais
+   - Investigar picos (anomalias)
+   - Impacto financeiro estimado
+
+5. **📝 Resumos em Linguagem Natural**
+   - Análise conversacional do mês
+   - Padrões e tendências
+   - Recomendações personalizadas
+
+6. **💬 Chat Financeiro IA**
+   - Responde perguntas sobre finanças
+   - Personalizadas com contexto do usuário
+   - Integração com AI providers existentes
+
+### Architecture
+- **Component:** `components/AIInsights.tsx` (465 linhas)
+- **UI:** 6 abas (tabs) interativas com scroll
+- **Data:** Calcula em tempo real de transactions + budgets
+- **IA Integration:** Usa `aiProviderService` para routing automático
+
+### Files Modified
+- ✅ `App.tsx` - Import + renderização do AIInsights
+- ✅ `components/AIInsights.tsx` - Novo componente com 6 features
+- ✅ `types.ts` - Uses TransactionType enum
+
+### Key Metrics Calculated
+- Categoria principal (top 1)
+- Todas as categorias (sorted by amount DESC)
+- Anomalias (>130% da média)
+- Saldo projetado (income - projected expenses)
+- Score de saúde (0-100)
+
+---
+
 ## 📊 EXCEL IMPORT/EXPORT SYSTEM (Turn 8 + Turn 21-22 FIXES)
 
 **Status:** ✅ FULLY IMPLEMENTED & ALL BUGS FIXED
