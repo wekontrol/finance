@@ -1,47 +1,25 @@
 import Database from 'better-sqlite3';
-import { Pool } from 'pg';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 
 let db: any = null;
-let pgPool: Pool | null = null;
-let usePostgres = false;
 
-// Initialize database based on environment
+// Initialize SQLite database (dev + production)
 function initDB() {
-  if (process.env.NODE_ENV === 'production' && process.env.TheFinance) {
-    usePostgres = true;
-    pgPool = new Pool({
-      connectionString: process.env.TheFinance,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
-    console.log('🗄️ DATABASE MODE: PostgreSQL (production)');
-    return pgPool;
-  } else {
-    usePostgres = false;
-    const dbPath = path.join(process.cwd(), 'data.db');
-    db = new Database(dbPath);
-    db.pragma('journal_mode = WAL');
-    console.log('🗄️ DATABASE MODE: SQLite (development)');
-    return db;
-  }
+  const dbPath = path.join(process.cwd(), 'data.db');
+  db = new Database(dbPath);
+  db.pragma('journal_mode = WAL');
+  console.log('🗄️ DATABASE MODE: SQLite (dev + production)');
+  return db;
 }
 
 const db_instance = initDB();
 
 /**
  * Sync translations from JSON files to database
- * SQLite only - PostgreSQL handles this via deploy.sh
  */
 function syncTranslationsFromJSON() {
-  // Only sync if using SQLite (development)
-  if (usePostgres) {
-    console.log('⏭️ Skipping translations sync - PostgreSQL uses deploy.sh migrations');
-    return;
-  }
 
   const localesPath = path.join(process.cwd(), 'public', 'locales');
   const languages = ['pt', 'en', 'es', 'um', 'ln', 'fr'];
@@ -82,12 +60,6 @@ function syncTranslationsFromJSON() {
 }
 
 export function initializeDatabase() {
-  // PostgreSQL: Skip table creation (deploy.sh handles it)
-  if (usePostgres) {
-    console.log('✅ Using external PostgreSQL - tables created by deploy.sh');
-    return;
-  }
-
   // SQLite: Create all tables and run migrations
   console.log('📦 Initializing SQLite database schema...');
 

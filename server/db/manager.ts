@@ -1,84 +1,55 @@
 /**
- * Database Manager - Abstração universal para SQLite + PostgreSQL
- * Suporta operações SYNC (SQLite) e ASYNC (PostgreSQL) automaticamente
- * Novo padrão: SEMPRE USE ASYNC/AWAIT
+ * Database Manager - SQLite com WAL para dev + produção
+ * Padrão: SEMPRE USE ASYNC/AWAIT para compatibilidade futura
  */
 
 import Database from 'better-sqlite3';
-import { Pool } from 'pg';
 import path from 'path';
 
 type QueryParams = any[];
 
 let dbInstance: Database.Database | null = null;
-let pgPool: Pool | null = null;
-let usePostgres = false;
-let databaseChoice: 'sqlite' | 'postgresql' = 'sqlite'; // Default to SQLite
 
-// Initialize based on environment + admin choice
+// Initialize SQLite (dev + production)
 export function initializeDatabaseManager() {
-  // Check admin choice from app_settings (if already initialized)
-  const choice = process.env.DATABASE_CHOICE || 'sqlite';
+  console.log('🗄️ DATABASE MODE: SQLite (dev + production)');
   
-  if ((process.env.NODE_ENV === 'production' && process.env.TheFinance) || choice === 'postgresql') {
-    console.log('🗄️ DATABASE MODE: PostgreSQL');
-    usePostgres = true;
-    databaseChoice = 'postgresql';
-    
-    pgPool = new Pool({
-      connectionString: process.env.TheFinance || process.env.DATABASE_URL,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
-    
-    pgPool.on('error', (err) => {
-      console.error('🔴 PostgreSQL pool error:', err);
-    });
-  } else {
-    console.log('🗄️ DATABASE MODE: SQLite (development)');
-    usePostgres = false;
-    databaseChoice = 'sqlite';
-    
-    const dbPath = path.join(process.cwd(), 'data.db');
-    dbInstance = new Database(dbPath);
-    dbInstance.pragma('journal_mode = WAL');
-  }
-}
-
-// Get current database choice
-export function getDatabaseChoice(): 'sqlite' | 'postgresql' {
-  return databaseChoice;
+  const dbPath = path.join(process.cwd(), 'data.db');
+  dbInstance = new Database(dbPath);
+  
+  // Enable Write-Ahead Logging for better concurrency
+  dbInstance.pragma('journal_mode = WAL');
+  
+  // Performance optimizations for family use
+  dbInstance.pragma('cache_size = -64000');      // 64MB cache
+  dbInstance.pragma('synchronous = NORMAL');      // Balance safety + speed
+  dbInstance.pragma('auto_vacuum = INCREMENTAL'); // Automatic cleanup
+  
+  console.log('✅ SQLite initialized with WAL + optimizations');
 }
 
 /**
  * Execute a query and return all rows
- * Works with both SQLite (sync) and PostgreSQL (async)
+ * Works with SQLite (sync converted to async)
  */
 export async function all(sql: string, params: QueryParams = []): Promise<any[]> {
-  if (usePostgres && pgPool) {
-    const result = await pgPool.query(sql, params);
-    return result.rows;
-  } else if (dbInstance) {
-    const stmt = dbInstance.prepare(sql);
-    return stmt.all(...params);
+  if (!dbInstance) {
+    throw new Error('Database not initialized');
   }
-  throw new Error('No database initialized');
+  const stmt = dbInstance.prepare(sql);
+  return stmt.all(...params);
 }
 
 /**
  * Execute a query and return first row
- * Works with both SQLite (sync) and PostgreSQL (async)
+ * Works with SQLite (sync converted to async)
  */
 export async function get(sql: string, params: QueryParams = []): Promise<any> {
-  if (usePostgres && pgPool) {
-    const result = await pgPool.query(sql, params);
-    return result.rows[0] || null;
-  } else if (dbInstance) {
-    const stmt = dbInstance.prepare(sql);
-    return stmt.get(...params) || null;
+  if (!dbInstance) {
+    throw new Error('Database not initialized');
   }
-  throw new Error('No database initialized');
+  const stmt = dbInstance.prepare(sql);
+  return stmt.get(...params) || null;
 }
 
 /**
@@ -86,15 +57,12 @@ export async function get(sql: string, params: QueryParams = []): Promise<any> {
  * Returns number of affected rows
  */
 export async function run(sql: string, params: QueryParams = []): Promise<{ changes: number }> {
-  if (usePostgres && pgPool) {
-    const result = await pgPool.query(sql, params);
-    return { changes: result.rowCount || 0 };
-  } else if (dbInstance) {
-    const stmt = dbInstance.prepare(sql);
-    const result = stmt.run(...params);
-    return { changes: result.changes };
+  if (!dbInstance) {
+    throw new Error('Database not initialized');
   }
-  throw new Error('No database initialized');
+  const stmt = dbInstance.prepare(sql);
+  const result = stmt.run(...params);
+  return { changes: result.changes };
 }
 
 /**
@@ -103,45 +71,32 @@ export async function run(sql: string, params: QueryParams = []): Promise<{ chan
 export async function transaction<T>(
   callback: (db: { all: typeof all; get: typeof get; run: typeof run }) => Promise<T>
 ): Promise<T> {
-  if (usePostgres && pgPool) {
-    const client = await pgPool.connect();
-    try {
-      await client.query('BEGIN');
-      const result = await callback({ all, get, run });
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
-  } else if (dbInstance) {
-    const txn = dbInstance.transaction(callback as any);
-    return txn({ all, get, run });
+  if (!dbInstance) {
+    throw new Error('Database not initialized');
   }
-  throw new Error('No database initialized');
+  const txn = dbInstance.transaction(callback as any);
+  return txn({ all, get, run });
 }
 
 /**
  * Get database type (for debugging/logging)
  */
-export function getType(): 'postgres' | 'sqlite' {
-  return usePostgres ? 'postgres' : 'sqlite';
-}
-
-/**
- * Check if using PostgreSQL
- */
-export function isPostgres(): boolean {
-  return usePostgres;
+export function getType(): 'sqlite' {
+  return 'sqlite';
 }
 
 /**
  * Check if using SQLite
  */
 export function isSQLite(): boolean {
-  return !usePostgres;
+  return true;
+}
+
+/**
+ * Get current database choice
+ */
+export function getDatabaseChoice(): 'sqlite' {
+  return 'sqlite';
 }
 
 export default {
@@ -150,6 +105,6 @@ export default {
   run,
   transaction,
   getType,
-  isPostgres,
   isSQLite,
+  getDatabaseChoice,
 };

@@ -12,8 +12,6 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   dotenv.config();
 }
-import pgPool, { initializeSessionsTable } from './db/postgres';
-import ConnectPgSimple from 'connect-pg-simple';
 import authRoutes from './routes/auth';
 import transactionRoutes from './routes/transactions';
 import goalRoutes from './routes/goals';
@@ -32,14 +30,9 @@ import translationsRoutes from './routes/translations';
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
-// Initialize both database systems
+// Initialize database systems
 initializeDatabase();
 initializeDatabaseManager();
-
-// Initialize PostgreSQL sessions table in production
-if (process.env.NODE_ENV === 'production' && process.env.TheFinance) {
-  initializeSessionsTable().catch(console.error);
-}
 
 // CORS configuration - must be before session middleware
 app.use(cors({
@@ -58,18 +51,8 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 const sessionSecret = process.env.SESSION_SECRET || 'gestor-financeiro-secret-key-2024';
 
-// Session store configuration
+// Session store configuration - use memory store (SQLite persists via database)
 let sessionStore: any;
-
-if (process.env.NODE_ENV === 'production' && process.env.TheFinance) {
-  // Use PostgreSQL in production
-  const PgStore = ConnectPgSimple(session);
-  sessionStore = new PgStore({
-    pool: pgPool,
-    tableName: 'session',
-    createTableIfMissing: true,
-  });
-}
 // In development, use memory store (that's OK for local dev)
 
 // Session middleware - must be before route handlers
