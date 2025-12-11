@@ -151,6 +151,11 @@ router.get('/limits', async (req: Request, res: Response) => {
 router.post('/create-defaults', async (req: Request, res: Response) => {
   try {
     const userId = req.session.userId;
+    
+    if (!userId) {
+      console.warn('Create default budgets: No userId in session');
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
 
     const defaultBudgets = [
       { category: 'Renda', limit: 0 },
@@ -173,24 +178,29 @@ router.post('/create-defaults', async (req: Request, res: Response) => {
 
     let created = 0;
     for (const budget of defaultBudgets) {
-      const existing = await db.get(`
-        SELECT id FROM budget_limits WHERE user_id = ? AND category = ?
-      `, [userId, budget.category]);
+      try {
+        const existing = await db.get(`
+          SELECT id FROM budget_limits WHERE user_id = ? AND category = ?
+        `, [userId, budget.category]);
 
-      if (!existing) {
-        const budgetId = `bl${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
-        await db.run(`
-          INSERT INTO budget_limits (id, user_id, category, limit_amount, is_default)
-          VALUES (?, ?, ?, ?, 1)
-        `, [budgetId, userId, budget.category, budget.limit]);
-        created++;
+        if (!existing) {
+          const budgetId = `bl${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
+          await db.run(`
+            INSERT INTO budget_limits (id, user_id, category, limit_amount, is_default)
+            VALUES (?, ?, ?, ?, 1)
+          `, [budgetId, userId, budget.category, budget.limit]);
+          created++;
+        }
+      } catch (e) {
+        console.error(`Failed to create budget for ${budget.category}:`, e);
       }
     }
 
+    console.log(`✅ Created ${created}/${defaultBudgets.length} default budgets for user ${userId}`);
     res.json({ message: `Created ${created} default budgets`, created });
   } catch (error: any) {
     console.error('Create default budgets error:', error);
-    res.status(500).json({ error: 'Failed to create default budgets' });
+    res.status(500).json({ error: 'Failed to create default budgets', details: error.message });
   }
 });
 

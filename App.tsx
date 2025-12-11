@@ -143,7 +143,14 @@ const App: React.FC = () => {
   const loadAllData = async () => {
     try {
       // Create default budgets for the user if they don't exist
-      await fetch('/api/budget/create-defaults', { method: 'POST' }).catch(() => {});
+      try {
+        const response = await fetch('/api/budget/create-defaults', { method: 'POST' });
+        if (!response.ok) {
+          console.warn('Failed to create default budgets:', response.status);
+        }
+      } catch (error) {
+        console.warn('Error creating default budgets:', error);
+      }
       
       const [transactionsData, goalsData, usersData, tasksData, eventsData, budgetsData] = await Promise.all([
         transactionsApi.getAll(),
