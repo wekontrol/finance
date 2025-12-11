@@ -114,23 +114,23 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
-            className="flex items-center gap-2 px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all duration-200 active:scale-95"
+            className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-2 sm:px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all duration-200 active:scale-95"
           >
-            <Globe size={16} className="md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
-            <span className="text-xl">{currentCurrencyData.flag}</span>
-            <span className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200">
+            <Globe size={14} className="hidden sm:block md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-lg sm:text-xl">{currentCurrencyData.flag}</span>
+            <span className="text-xs sm:text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 hidden sm:inline">
               {currency}
             </span>
             <ChevronDown 
-              size={16} 
-              className={`text-slate-500 dark:text-slate-400 transition-transform duration-200 ${isCurrencyDropdownOpen ? 'rotate-180' : ''}`}
+              size={14} 
+              className={`hidden sm:block text-slate-500 dark:text-slate-400 transition-transform duration-200 ${isCurrencyDropdownOpen ? 'rotate-180' : ''}`}
             />
           </button>
 
-          {/* Dropdown Menu */}
+          {/* Dropdown Menu - Mobile optimized */}
           {isCurrencyDropdownOpen && (
-            <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg z-50 overflow-hidden">
-              <div className="max-h-64 overflow-y-auto">
+            <div className="fixed sm:absolute bottom-0 sm:bottom-auto sm:top-full left-0 sm:left-0 right-0 sm:right-auto w-full sm:w-56 bg-white dark:bg-slate-800 sm:rounded-xl border-t sm:border border-slate-200 dark:border-slate-700 shadow-xl sm:shadow-lg z-50 overflow-hidden">
+              <div className="max-h-96 sm:max-h-72 overflow-y-auto">
                 {CURRENCIES.map((curr) => (
                   <button
                     key={curr.code}
@@ -138,18 +138,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                       setCurrency(curr.code);
                       setIsCurrencyDropdownOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors ${
+                    className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-3.5 py-3 sm:py-2.5 text-xs sm:text-sm transition-colors ${
                       currency === curr.code
                         ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold'
                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                     }`}
                   >
                     <span className="text-lg">{curr.flag}</span>
-                    <span className="font-medium">{curr.code}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">({curr.label.split('(')[1]}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                      <span className="font-medium text-left">{curr.code}</span>
+                      <span className="hidden sm:inline text-xs text-slate-500 dark:text-slate-400">({curr.label.split('(')[1]}</span>
+                    </div>
                   </button>
                 ))}
               </div>
+              <div className="h-4 sm:hidden" />
             </div>
           )}
         </div>
