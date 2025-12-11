@@ -74,37 +74,59 @@ The application features a fully translated user interface supporting dynamic la
 
 ---
 
-## 🎯 DEFAULT BUDGETS SYSTEM (Turn 12)
+## 🎯 DEFAULT BUDGETS SYSTEM (Turn 12-14)
 
-**Status:** ✅ FULLY IMPLEMENTED
+**Status:** ✅ FULLY IMPLEMENTED + Super Admin Manager ✅
 **Date:** December 11, 2025
 
 ### 16 Default Budget Categories
-1. Renda (Income)
-2. Energia (Energy)
-3. Água (Water)
-4. Transporte (Transportation)
-5. Alimentação (Food)
-6. Combustível (Fuel)
-7. Compras domésticas (Household Shopping)
-8. Lazer (Entertainment)
-9. Roupas (Clothing)
-10. Saúde (Health)
-11. Cuidados pessoais (Personal Care)
-12. **Reparação** (Repairs) ✅ [NEW - was split from "Reparações e Manutenção"]
-13. **Manutenção** (Maintenance) ✅ [NEW - was split from "Reparações e Manutenção"]
-14. Presentes (Gifts)
-15. Eventos (Events)
-16. Viagens (Travel)
+1. Renda (Income) - 0 Kz
+2. Energia (Energy) - 150 Kz
+3. Água (Water) - 80 Kz
+4. Transporte (Transportation) - 200 Kz
+5. Alimentação (Food) - 300 Kz
+6. Combustível (Fuel) - 200 Kz
+7. Compras domésticas (Household Shopping) - 150 Kz
+8. Lazer (Entertainment) - 150 Kz
+9. Roupas (Clothing) - 100 Kz
+10. Saúde (Health) - 200 Kz
+11. Cuidados pessoais (Personal Care) - 80 Kz
+12. **Reparação** (Repairs) - 150 Kz
+13. **Manutenção** (Maintenance) - 150 Kz
+14. Presentes (Gifts) - 100 Kz
+15. Eventos (Events) - 200 Kz
+16. Viagens (Travel) - 300 Kz
 
-### Changes Made
+### Changes Made (Turn 12)
 - ✅ Removed "Juros / Multas" (Interest/Fines) - consolidated into savings tracking
 - ✅ Split "Reparações e Manutenção" into separate "Reparação" and "Manutenção" categories
 - ✅ Fixed alignment issue in currency selector button (AO/AOA vertical alignment)
 - ✅ Enhanced error logging in budget creation endpoint
 - ✅ Ensured predictFutureExpenses is properly exported and routed through AI provider system
 
+### New: Budget Defaults Manager (Turn 14) ✅
+**For Super Admin ONLY:**
+- ✅ UI: **Settings > General > "Gerenciar Categorias"** button
+- ✅ Modal popup with editable limit fields for all 16 categories
+- ✅ Save/Reset/Cancel actions
+- ✅ Real-time backend sync via `/api/budget/defaults` endpoints
+- ✅ Database stores defaults in `app_settings` table with keys like `budget_default_Alimentação`
+
+**How it works:**
+1. Super Admin clicks button in Settings > General
+2. Popup shows all 16 categories with current limit values
+3. Super Admin edits any limit and clicks "Salvar"
+4. New defaults are stored in app_settings
+5. All new users get these defaults automatically
+
 ### Database
 - All 16 budgets marked as `is_default = 1`
 - Auto-created for new users via `/api/budget/create-defaults` endpoint
-- Deletable by users (default budgets cannot be deleted, only custom ones can)
+- System defaults stored in `app_settings` table (keys: `budget_default_*`)
+- GET/POST `/api/budget/defaults` for Super Admin management only
+- Defaults can be edited by Super Admin without affecting existing user budgets
+
+### Files Added/Modified
+- ✅ **NEW:** `components/BudgetDefaultsManager.tsx` - Modal component for Super Admin
+- ✅ **MODIFIED:** `server/routes/budget.ts` - Added `GET/POST /defaults` endpoints
+- ✅ **MODIFIED:** `components/AdminPanel.tsx` - Added button + modal integration

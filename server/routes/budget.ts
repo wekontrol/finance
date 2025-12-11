@@ -393,4 +393,83 @@ router.post('/history/save', async (req: Request, res: Response) => {
   }
 });
 
+// Get system default budget categories (Super Admin only)
+router.get('/defaults', async (req: Request, res: Response) => {
+  if (req.session?.user?.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ error: 'Super Admin only' });
+  }
+
+  try {
+    const defaults = await db.all(`
+      SELECT key, value FROM app_settings WHERE key LIKE 'budget_default_%' ORDER BY key
+    `);
+    
+    const formatted = defaults.map(d => {
+      const [_, category] = d.key.split('budget_default_');
+      return {
+        category: decodeURIComponent(category),
+        limit: parseInt(d.value)
+      };
+    });
+
+    res.json(formatted.length > 0 ? formatted : getSystemDefaults());
+  } catch (error: any) {
+    console.error('Get budget defaults error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Save system default budget categories (Super Admin only)
+router.post('/defaults', async (req: Request, res: Response) => {
+  if (req.session?.user?.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ error: 'Super Admin only' });
+  }
+
+  try {
+    const { categories } = req.body;
+
+    if (!Array.isArray(categories)) {
+      return res.status(400).json({ error: 'Invalid format' });
+    }
+
+    // Clear existing defaults
+    await db.run(`DELETE FROM app_settings WHERE key LIKE 'budget_default_%'`);
+
+    // Save new defaults
+    for (const cat of categories) {
+      const key = `budget_default_${encodeURIComponent(cat.category)}`;
+      await db.run(`
+        INSERT INTO app_settings (key, value) VALUES (?, ?)
+      `, [key, cat.limit.toString()]);
+    }
+
+    console.log(`✅ Updated ${categories.length} system budget defaults`);
+    res.json({ success: true, message: `Updated ${categories.length} defaults` });
+  } catch (error: any) {
+    console.error('Save budget defaults error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function getSystemDefaults() {
+  return [
+    { category: 'Renda', limit: 0 },
+    { category: 'Energia', limit: 150 },
+    { category: 'Água', limit: 80 },
+    { category: 'Transporte', limit: 200 },
+    { category: 'Alimentação', limit: 300 },
+    { category: 'Combustível', limit: 200 },
+    { category: 'Compras domésticas', limit: 150 },
+    { category: 'Lazer', limit: 150 },
+    { category: 'Roupas', limit: 100 },
+    { category: 'Saúde', limit: 200 },
+    { category: 'Cuidados pessoais', limit: 80 },
+    { category: 'Reparação', limit: 150 },
+    { category: 'Manutenção', limit: 150 },
+    { category: 'Presentes', limit: 100 },
+    { category: 'Eventos', limit: 200 },
+    { category: 'Viagens', limit: 300 }
+  ];
+}
+
 export default router;

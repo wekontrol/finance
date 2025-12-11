@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { BackupConfig, User, UserRole, UserStatus } from '../types';
-import { HardDrive, Save, Server, ChevronDown, ChevronUp, Users, UserPlus, Edit, Trash2, X, Sliders, AlertTriangle, Bell, Shield, Upload, Check, UserCheck, Lock, Unlock, Key, RefreshCw, Bot, Sparkles, CheckCircle, Download, Github, Terminal, Cpu, Network, Loader2, FileText, Languages, ArrowRightLeft, FileUp } from 'lucide-react';
+import { HardDrive, Save, Server, ChevronDown, ChevronUp, Users, UserPlus, Edit, Trash2, X, Sliders, AlertTriangle, Bell, Shield, Upload, Check, UserCheck, Lock, Unlock, Key, RefreshCw, Bot, Sparkles, CheckCircle, Download, Github, Terminal, Cpu, Network, Loader2, FileText, Languages, ArrowRightLeft, FileUp, PieChart } from 'lucide-react';
 import { setGeminiKey, hasGeminiKey } from '../services/geminiService';
 import { hasPuterEnabled, setPuterAsDefault } from '../services/puterService';
 import { setGroqKey, hasGroqKey } from '../services/groqService';
@@ -14,6 +14,7 @@ import TranslationManager from './TranslationManager';
 import CurrencyProviderSettings from './CurrencyProviderSettings';
 import ModelManagement from './ModelManagement';
 import AIProviderSettings from './AIProviderSettings';
+import BudgetDefaultsManager from './BudgetDefaultsManager';
 
 interface AdminPanelProps {
   appName: string;
@@ -119,6 +120,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   // Families State
   const [families, setFamilies] = useState<any[]>([]);
   const [familiesLoading, setFamiliesLoading] = useState(false);
+
+  // Budget Defaults Manager State
+  const [isBudgetManagerOpen, setIsBudgetManagerOpen] = useState(false);
 
   // Terms State
   const [termsContent, setTermsContent] = useState('');
@@ -573,6 +577,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Alertas</label>
                      <button onClick={requestNotificationPermission} className="w-full p-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold rounded-xl hover:bg-slate-200 flex items-center justify-center gap-2"><Bell size={18} /> Testar Notificações</button>
                    </div>
+                   {isSuperAdmin && (
+                     <div>
+                       <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Orçamentos</label>
+                       <button onClick={() => setIsBudgetManagerOpen(true)} className="w-full p-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold rounded-xl hover:bg-slate-200 flex items-center justify-center gap-2"><PieChart size={18} /> Gerenciar Categorias</button>
+                     </div>
+                   )}
                 </div>
                 {isSuperAdmin && (
                   <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-700">
@@ -1514,8 +1524,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         )}
 
       </div>
+
+      {/* Budget Defaults Manager Modal */}
+      <BudgetDefaultsManager
+        isOpen={isBudgetManagerOpen}
+        onClose={() => setIsBudgetManagerOpen(false)}
+        currencyFormatter={formatCurrency}
+      />
     </div>
   );
 };
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-AO', {
+    style: 'currency',
+    currency: 'AOA',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+}
 
 export default AdminPanel;
