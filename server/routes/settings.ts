@@ -14,6 +14,27 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
+// Get current database selection
+router.get('/database-choice', async (req: Request, res: Response) => {
+  if (req.session?.user?.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ error: 'Super Admin only' });
+  }
+
+  try {
+    const currentChoice = process.env.DATABASE_CHOICE || 'sqlite';
+    const available = ['sqlite', 'postgresql'];
+    
+    res.json({
+      currentChoice,
+      availableChoices: available,
+      pgConfigured: !!process.env.TheFinance || !!process.env.DATABASE_URL
+    });
+  } catch (error: any) {
+    console.error('Error fetching database choice:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Update global settings
 router.post('/', async (req: Request, res: Response) => {
   if (req.session?.user?.role !== 'SUPER_ADMIN') {

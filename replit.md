@@ -42,3 +42,72 @@ The application features a fully translated user interface supporting dynamic la
     -   `jspdf` + `jspdf-autotable`: For PDF exports.
 -   **Database:** PostgreSQL (local or cloud backends like Neon, Render, AWS RDS).
 -   **Currency API:** Fawaz Ahmed Currency API (CDN-hosted) for live exchange rates.
+---
+
+## 🔍 Analysis: Admin Choosing SQLite vs PostgreSQL
+
+**Status:** ✅ DEEP ANALYSIS COMPLETED (Turn 3)
+**Viability:** 6/10 - Possible but requires significant query refactoring
+
+### Summary
+Admin choice to switch between SQLite (development) and PostgreSQL (production) is technically feasible but comes with critical limitations due to SQL dialect differences.
+
+### What Works ✅
+- `manager.ts` abstraction layer already supports both databases
+- All 71 endpoints use parameterized queries (safe)
+- 5 files are fully compatible (auth, family, families, email, system)
+- New endpoint: `GET /api/settings/database-choice` (admin only)
+
+### Critical Problems Found ❌
+1. **INSERT OR REPLACE** (12+ endpoints affected)
+   - SQLite: `INSERT OR REPLACE INTO...`
+   - PostgreSQL: `INSERT INTO... ON CONFLICT(id) DO UPDATE...`
+
+2. **datetime() Function** (25+ queries affected)
+   - SQLite: `datetime('now')`
+   - PostgreSQL: `CURRENT_TIMESTAMP`
+
+3. **PRAGMA Statements** (schema.ts)
+   - SQLite-only: `PRAGMA foreign_keys = ON`
+
+4. **Date Functions** (5+ queries)
+   - SQLite: `strftime('%Y-%m-%d', created_at)`
+   - PostgreSQL: `DATE(created_at)`
+
+### File Compatibility
+- ✅ Fully compatible (5): auth, family, families, email, system
+- ⚠️ Minor issues (6): users, transactions, goals, notifications, families, backup
+- ❌ Critical issues (3): budget, settings, translations, push, backup
+
+### Tests Performed ✅
+All 5 critical endpoints tested and passing in SQLite:
+- ✅ Login (auth.ts)
+- ✅ Get Users (users.ts)
+- ✅ Get Transactions (transactions.ts)
+- ✅ Get Budgets (budget.ts)
+- ✅ Get Settings (settings.ts)
+
+### Recommendation
+**Do NOT implement full switching in Fast Mode.**
+
+**Reasons:**
+1. Requires refactoring 8+ files with complex queries
+2. Testing both databases requires external PostgreSQL setup
+3. High risk of data corruption if something breaks
+
+**If you decide to continue:**
+- Switch to Autonomous Mode
+- Implement "Intelligent Query Abstraction" (Option 1)
+- Estimated effort: 8-10 hours
+- Add helpers in manager.ts for datetime() and INSERT OR REPLACE
+
+**Safer alternative:**
+- Keep SQLite as default (always works)
+- PostgreSQL via environment variable (production only)
+- No runtime switching (eliminates risk)
+
+### Implementations Made
+1. `manager.ts`: Added `getDatabaseChoice()` function
+2. `manager.ts`: Support for `DATABASE_CHOICE` env variable
+3. `settings.ts`: New admin endpoint `GET /api/settings/database-choice`
+

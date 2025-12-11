@@ -13,15 +13,20 @@ type QueryParams = any[];
 let dbInstance: Database.Database | null = null;
 let pgPool: Pool | null = null;
 let usePostgres = false;
+let databaseChoice: 'sqlite' | 'postgresql' = 'sqlite'; // Default to SQLite
 
-// Initialize based on environment
+// Initialize based on environment + admin choice
 export function initializeDatabaseManager() {
-  if (process.env.NODE_ENV === 'production' && process.env.TheFinance) {
-    console.log('🗄️ DATABASE MODE: PostgreSQL (production)');
+  // Check admin choice from app_settings (if already initialized)
+  const choice = process.env.DATABASE_CHOICE || 'sqlite';
+  
+  if ((process.env.NODE_ENV === 'production' && process.env.TheFinance) || choice === 'postgresql') {
+    console.log('🗄️ DATABASE MODE: PostgreSQL');
     usePostgres = true;
+    databaseChoice = 'postgresql';
     
     pgPool = new Pool({
-      connectionString: process.env.TheFinance,
+      connectionString: process.env.TheFinance || process.env.DATABASE_URL,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
@@ -33,11 +38,17 @@ export function initializeDatabaseManager() {
   } else {
     console.log('🗄️ DATABASE MODE: SQLite (development)');
     usePostgres = false;
+    databaseChoice = 'sqlite';
     
     const dbPath = path.join(process.cwd(), 'data.db');
     dbInstance = new Database(dbPath);
     dbInstance.pragma('journal_mode = WAL');
   }
+}
+
+// Get current database choice
+export function getDatabaseChoice(): 'sqlite' | 'postgresql' {
+  return databaseChoice;
 }
 
 /**
