@@ -213,3 +213,58 @@ You can now publish to production with confidence! 🚀
 - Responsive widths: w-80 (mobile), w-56 (tablet+)
 - Full TypeScript support with proper types
 
+
+---
+
+## 🌓 Dark Mode Analysis & Fixes (Turn 5)
+
+**Status:** ✅ ANALYZED & FIXED
+**Date:** December 11, 2025
+
+### Problems Found
+1. **CartesianGrid invisible in dark mode**
+   - Was using `stroke="#e2e8f0"` (light gray, invisible on dark background)
+   - Affected: Dashboard chart visualization
+
+2. **XAxis/YAxis low contrast**
+   - Was using `stroke="#94a3b8"` (medium gray, hard to read in dark)
+
+3. **26 components with `bg-white` without dark mode equivalent**
+   - Most were properly paired with `dark:bg-slate-800`
+   - Only minor issues identified
+
+### Solutions Implemented
+1. ✅ **Dynamic CartesianGrid colors**
+   - Dark mode: `#475569` (darker gray for visibility)
+   - Light mode: `#e2e8f0` (original light gray)
+
+2. ✅ **Dynamic Axis strokes**
+   - Dark mode: `#94a3b8` (lighter gray for contrast)
+   - Light mode: `#64748b` (darker gray for light background)
+
+3. ✅ **Passed `darkMode` prop**
+   - Dashboard now receives `darkMode` from App.tsx
+   - Colors adapt automatically when toggle is used
+
+### Testing Results
+- ✅ Dark mode toggle works smoothly
+- ✅ Charts visible in both modes
+- ✅ Text contrast adequate
+- ✅ No hardcoded colors breaking in dark mode
+
+### Components Verified
+- Dashboard: Charts now adaptive
+- AppHeader: Dark mode button working
+- Sidebar: Proper dark mode styling
+- Login: Responsive to system preference
+- Forms: Good contrast in both modes
+
+### Color Palette Used
+| Element | Light Mode | Dark Mode |
+|---------|-----------|-----------|
+| CartesianGrid | #e2e8f0 | #475569 |
+| XAxis | #64748b | #94a3b8 |
+| YAxis | #64748b | #94a3b8 |
+| Text | #334155 | #cbd5e1 |
+| Backgrounds | #f8fafc | #09090b |
+

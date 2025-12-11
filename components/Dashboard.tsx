@@ -21,6 +21,7 @@ interface DashboardProps {
   currencyFormatter: (value: number) => string;
   currentInflation?: number;
   currentUser?: any;
+  darkMode?: boolean;
 }
 
 const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#06b6d4', '#84cc16'];
@@ -33,7 +34,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   budgets = [], 
   currencyFormatter,
   currentInflation = 0,
-  currentUser
+  currentUser,
+  darkMode = false
 }) => {
   const { t, language } = useLanguage();
   const [advice, setAdvice] = useState<string>(t("dashboard.analyzing"));
@@ -500,10 +502,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.3} vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#475569" : "#e2e8f0"} opacity={0.3} vertical={false} />
                 <XAxis 
                   dataKey="name" 
-                  stroke="#94a3b8" 
+                  stroke={darkMode ? "#94a3b8" : "#64748b"} 
                   fontSize={11} 
                   tickLine={false} 
                   axisLine={false} 
@@ -511,7 +513,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   minTickGap={20}
                 />
                 <YAxis 
-                  stroke="#94a3b8" 
+                  stroke={darkMode ? "#94a3b8" : "#64748b"} 
                   fontSize={11} 
                   tickLine={false} 
                   axisLine={false} 
