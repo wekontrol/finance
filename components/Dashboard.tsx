@@ -306,7 +306,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button 
                   onClick={handleAnalyzeBehavior}
                   disabled={isAnalyzingBehavior}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl font-bold text-sm transition flex items-center whitespace-nowrap border border-white/10 active:scale-95"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl font-bold text-sm transition flex items-center whitespace-nowrap border border-white/10 active:scale-95"
                 >
                   {isAnalyzingBehavior ? <Sparkles className="animate-spin mr-2" size={16}/> : <Sparkles className="mr-2 text-yellow-300" size={16}/>}
                   {isAnalyzingBehavior ? t('dashboard.analyzing_dot') : t('dashboard.analyzeBehavior')}

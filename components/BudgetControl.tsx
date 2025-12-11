@@ -202,7 +202,7 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
 
       {/* Visualizar Histórico */}
       {showHistory && (
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-6 animate-slide-in-left">
+        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-6 animate-slide-in-left">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-slate-800 dark:text-white text-lg flex items-center gap-2">
               <History size={20} className="text-primary-600" />
@@ -284,7 +284,7 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
 
       {/* Adicionar Novo Orçamento */}
       {isAddingNew && (
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-6 animate-slide-in-left">
+        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-6 animate-slide-in-left">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4 flex items-center gap-2">
             <Plus size={20} className="text-primary-600" />
             {t("budget.new_budget")}
@@ -369,7 +369,7 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
           const isNearLimit = limit > 0 && spent > limit * 0.9 && !isOverBudget;
 
           return (
-            <div key={cat} className="bg-white dark:bg-slate-800 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between transition-transform hover:-translate-y-1 duration-300">
+            <div key={cat} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between transition-transform hover:-translate-y-1 duration-300">
               <div>
                 <div className="flex justify-between items-start mb-4 gap-2">
                   <div className="flex items-center gap-2 min-w-0">
