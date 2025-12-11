@@ -16,7 +16,7 @@ interface TransactionsProps {
 }
 
 const ITEMS_PER_PAGE = 10;
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_FILE_SIZE = 12 * 1024 * 1024; // 12MB
 
 const Transactions: React.FC<TransactionsProps> = ({ 
   transactions, 
