@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { Transaction, TransactionType } from '../types';
+import { getFrequencyLabel, parseFrequencyFromLabel } from './frequencyTranslations';
 
 /**
  * Exporta transações para um arquivo Excel com template
@@ -36,19 +37,68 @@ export const exportTransactionsToExcel = (transactions: Transaction[], currencyF
 
 /**
  * Cria um arquivo Excel em branco com o template para importação
+ * Adapta para o idioma do usuário (português, espanhol, umbundu)
  */
-export const downloadExcelTemplate = () => {
+export const downloadExcelTemplate = (language: string = 'pt') => {
+  const isPortuguese = language === 'pt';
+  const isSpanish = language === 'es';
+  const isUmbundu = language === 'um';
+
+  // Headers in user's language
+  let headers: string[];
+  let exampleRows: string[][];
+  let instructions: string[][];
+
+  if (isSpanish) {
+    headers = ['Fecha', 'Descripción', 'Categoría', 'Valor', 'Tipo', 'Recurrente', 'Frecuencia'];
+    exampleRows = [
+      ['2024-01-15', 'Ejemplo: Salario', 'Salario', '5000.00', 'Ingreso', 'No', ''],
+      ['2024-01-20', 'Ejemplo: Supermercado', 'Alimentación', '150.50', 'Gasto', 'No', ''],
+      ['2024-01-25', 'Ejemplo: Alquiler', 'Vivienda', '1200.00', 'Gasto', 'Sí', 'Mensual'],
+    ];
+    instructions = [
+      ['INSTRUCCIONES:', '', '', '', '', '', ''],
+      ['Fecha: YYYY-MM-DD (ej: 2024-01-15)', '', '', '', '', '', ''],
+      ['Tipo: "Ingreso" o "Gasto"', '', '', '', '', '', ''],
+      ['Recurrente: "Sí" o "No"', '', '', '', '', '', ''],
+      ['Frecuencia: Semanal, Quincenal, Mensual, Trimestral, Semestral, Anual (opcional)', '', '', '', '', '', ''],
+    ];
+  } else if (isUmbundu) {
+    headers = ['Dési', 'Okwikwixi', 'Ongolo', 'Vavali', 'Ohala', 'Odula', 'Olambi'];
+    exampleRows = [
+      ['2024-01-15', 'Okwenzhela: Okwenzhela', 'Okwenzhela', '5000.00', 'Okusama', 'Okilá', ''],
+      ['2024-01-20', 'Okwenzhela: Malonda', 'Okudya', '150.50', 'Okutula', 'Okilá', ''],
+      ['2024-01-25', 'Okwenzhela: Nzo', 'Inda', '1200.00', 'Okutula', 'Eie', 'Lingilá'],
+    ];
+    instructions = [
+      ['OKUSALA:', '', '', '', '', '', ''],
+      ['Dési: YYYY-MM-DD (okusala: 2024-01-15)', '', '', '', '', '', ''],
+      ['Ohala: "Okusama" o "Okutula"', '', '', '', '', '', ''],
+      ['Odula: "Eie" o "Okilá"', '', '', '', '', '', ''],
+      ['Olambi: Lingana, Lingana ya mavali, Lingilá, Lingilá ya kuna, Lingilá ya sitanu, Angelu (okusikila)', '', '', '', '', '', ''],
+    ];
+  } else {
+    // Portuguese (default)
+    headers = ['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo', 'Recorrente', 'Frequência'];
+    exampleRows = [
+      ['2024-01-15', 'Exemplo: Salário', 'Salário', '5000.00', 'Receita', 'Não', ''],
+      ['2024-01-20', 'Exemplo: Supermercado', 'Alimentação', '150.50', 'Despesa', 'Não', ''],
+      ['2024-01-25', 'Exemplo: Aluguel', 'Habitação', '1200.00', 'Despesa', 'Sim', 'Mensal'],
+    ];
+    instructions = [
+      ['INSTRUÇÕES:', '', '', '', '', '', ''],
+      ['Data: YYYY-MM-DD (ex: 2024-01-15)', '', '', '', '', '', ''],
+      ['Tipo: "Receita" ou "Despesa"', '', '', '', '', '', ''],
+      ['Recorrente: "Sim" ou "Não"', '', '', '', '', '', ''],
+      ['Frequência: Semanal, Quinzenal, Mensal, Trimestral, Semestral, Anual (opcional)', '', '', '', '', '', ''],
+    ];
+  }
+
   const template = [
-    ['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo', 'Recorrente', 'Frequência'],
-    ['2024-01-15', 'Exemplo: Salário', 'Salário', '5000.00', 'Receita', 'Não', ''],
-    ['2024-01-20', 'Exemplo: Supermercado', 'Alimentação', '150.50', 'Despesa', 'Não', ''],
-    ['2024-01-25', 'Exemplo: Aluguel', 'Habitação', '1200.00', 'Despesa', 'Sim', 'monthly'],
+    headers,
+    ...exampleRows,
     ['', '', '', '', '', '', ''],
-    ['INSTRUÇÕES:', '', '', '', '', '', ''],
-    ['Data: YYYY-MM-DD (ex: 2024-01-15)', '', '', '', '', '', ''],
-    ['Tipo: "Receita" ou "Despesa"', '', '', '', '', '', ''],
-    ['Recorrente: "Sim" ou "Não"', '', '', '', '', '', ''],
-    ['Frequência: "weekly", "biweekly", "monthly", "quarterly", "semiannual", "yearly" (opcional)', '', '', '', '', '', ''],
+    ...instructions,
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(template);
@@ -69,8 +119,9 @@ export const downloadExcelTemplate = () => {
 
 /**
  * Importa transações de um arquivo Excel
+ * Suporta idiomas: português (pt), espanhol (es), umbundu (um)
  */
-export const importTransactionsFromExcel = (file: File): Promise<Omit<Transaction, 'id'>[]> => {
+export const importTransactionsFromExcel = (file: File, language: string = 'pt'): Promise<Omit<Transaction, 'id'>[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -90,13 +141,25 @@ export const importTransactionsFromExcel = (file: File): Promise<Omit<Transactio
 
         (rows as any[]).forEach((row, index) => {
           try {
-            const date = String(row['Data'] || '').trim();
-            const description = String(row['Descrição'] || '').trim();
-            const category = String(row['Categoria'] || 'Geral').trim();
-            const amount = parseFloat(String(row['Valor'] || '0'));
-            const typeStr = String(row['Tipo'] || 'Despesa').trim().toLowerCase();
-            const isRecurringStr = String(row['Recorrente'] || 'Não').trim().toLowerCase();
-            const frequency = String(row['Frequência'] || 'monthly').trim();
+            // Support multiple languages for column headers
+            const isSpanish = language === 'es';
+            const isUmbundu = language === 'um';
+
+            const dateKey = isSpanish ? 'Fecha' : isUmbundu ? 'Dési' : 'Data';
+            const descKey = isSpanish ? 'Descripción' : isUmbundu ? 'Okwikwixi' : 'Descrição';
+            const catKey = isSpanish ? 'Categoría' : isUmbundu ? 'Ongolo' : 'Categoria';
+            const valKey = isSpanish ? 'Valor' : isUmbundu ? 'Vavali' : 'Valor';
+            const typeKey = isSpanish ? 'Tipo' : isUmbundu ? 'Ohala' : 'Tipo';
+            const recurKey = isSpanish ? 'Recurrente' : isUmbundu ? 'Odula' : 'Recorrente';
+            const freqKey = isSpanish ? 'Frecuencia' : isUmbundu ? 'Olambi' : 'Frequência';
+
+            const date = String(row[dateKey] || '').trim();
+            const description = String(row[descKey] || '').trim();
+            const category = String(row[catKey] || (isSpanish ? 'General' : isUmbundu ? 'Ongolo' : 'Geral')).trim();
+            const amount = parseFloat(String(row[valKey] || '0'));
+            const typeStr = String(row[typeKey] || (isSpanish ? 'Gasto' : isUmbundu ? 'Okutula' : 'Despesa')).trim().toLowerCase();
+            const isRecurringStr = String(row[recurKey] || (isSpanish ? 'No' : isUmbundu ? 'Okilá' : 'Não')).trim().toLowerCase();
+            let frequency = String(row[freqKey] || 'monthly').trim().toLowerCase();
 
             // Validar data
             if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -116,13 +179,28 @@ export const importTransactionsFromExcel = (file: File): Promise<Omit<Transactio
               return;
             }
 
-            // Determinar tipo
-            const type = typeStr.includes('receita') || typeStr.includes('income') 
-              ? TransactionType.INCOME 
-              : TransactionType.EXPENSE;
+            // Determinar tipo (suporta múltiplas línguas)
+            let type = TransactionType.EXPENSE;
+            if (isSpanish) {
+              type = typeStr.includes('ingreso') || typeStr.includes('income') ? TransactionType.INCOME : TransactionType.EXPENSE;
+            } else if (isUmbundu) {
+              type = typeStr.includes('okusama') || typeStr.includes('income') ? TransactionType.INCOME : TransactionType.EXPENSE;
+            } else {
+              type = typeStr.includes('receita') || typeStr.includes('income') ? TransactionType.INCOME : TransactionType.EXPENSE;
+            }
 
-            // Determinar recorrência
-            const isRecurring = isRecurringStr.includes('sim') || isRecurringStr.includes('yes');
+            // Determinar recorrência (suporta múltiplas línguas)
+            let isRecurring = false;
+            if (isSpanish) {
+              isRecurring = isRecurringStr.includes('sí') || isRecurringStr.includes('yes');
+            } else if (isUmbundu) {
+              isRecurring = isRecurringStr.includes('eie') || isRecurringStr.includes('yes');
+            } else {
+              isRecurring = isRecurringStr.includes('sim') || isRecurringStr.includes('yes');
+            }
+
+            // Parse frequency (converter de label localizado para chave em inglês)
+            frequency = parseFrequencyFromLabel(frequency, language as any);
 
             const transaction: Omit<Transaction, 'id'> = {
               userId: '', // Será preenchido pelo componente
