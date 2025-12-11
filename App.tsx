@@ -142,7 +142,7 @@ const App: React.FC = () => {
 
   const loadAllData = async () => {
     try {
-      // Create default budgets for the user if they don't exist
+      // Create default budgets for the user if they don't exist (BEFORE loading)
       try {
         const response = await fetch('/api/budget/create-defaults', { method: 'POST' });
         if (!response.ok) {
@@ -151,6 +151,9 @@ const App: React.FC = () => {
       } catch (error) {
         console.warn('Error creating default budgets:', error);
       }
+      
+      // Wait a bit to ensure database is synced
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const [transactionsData, goalsData, usersData, tasksData, eventsData, budgetsData] = await Promise.all([
         transactionsApi.getAll(),
@@ -166,6 +169,7 @@ const App: React.FC = () => {
       setFamilyTasks(tasksData);
       setFamilyEvents(eventsData);
       setBudgets(budgetsData);
+      console.log(`[loadAllData] Budgets loaded: ${budgetsData.length}`);
     } catch (error) {
       console.error('Error loading data:', error);
     }
