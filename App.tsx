@@ -335,6 +335,13 @@ const App: React.FC = () => {
       // Add new budget at beginning, remove old one if exists
       const filtered = budgets.filter(b => b.category !== budget.category);
       setBudgets([result, ...filtered]);
+      // Reload all budgets from server to ensure they're persisted
+      setTimeout(() => {
+        budgetApi.getLimits().then(data => {
+          setBudgets(data);
+          console.log(`[saveBudget] Reloaded ${data.length} budgets from server`);
+        }).catch(err => console.error('Error reloading budgets:', err));
+      }, 500);
     } catch (error) {
       console.error('Error saving budget:', error);
     }

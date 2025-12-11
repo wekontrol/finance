@@ -121,6 +121,11 @@ router.get('/limits', async (req: Request, res: Response) => {
     const userId = req.session?.userId;
     const user = req.session?.user;
 
+    if (!userId) {
+      console.warn('[Budget GET] No userId in session');
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
     let limits;
     if (user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER') {
       limits = await db.all(`
@@ -134,6 +139,8 @@ router.get('/limits', async (req: Request, res: Response) => {
       `, [userId]);
     }
 
+    console.log(`[Budget GET] User ${userId}: Found ${limits.length} budgets`);
+    
     const formattedLimits = limits.map((l: any) => ({
       category: l.category,
       limit: l.limit_amount,
