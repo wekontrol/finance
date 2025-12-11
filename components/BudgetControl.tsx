@@ -37,9 +37,20 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
   const [budgetHistory, setBudgetHistory] = useState<Record<string, HistoryEntry[]>>({});
   const [selectedMonth, setSelectedMonth] = useState<string>('');
 
-  // Get all existing budget categories for current user
+  // Get all existing budget categories for current user and deduplicate
   const existingBudgetCategories = useMemo(() => {
     return new Set(budgets.map(b => b.category));
+  }, [budgets]);
+
+  // Sort budgets alphabetically and deduplicate
+  const sortedBudgets = useMemo(() => {
+    const seen = new Set<string>();
+    const unique = budgets.filter(b => {
+      if (seen.has(b.category)) return false;
+      seen.add(b.category);
+      return true;
+    });
+    return unique.sort((a, b) => a.category.localeCompare(b.category));
   }, [budgets]);
 
   const categorySpending = useMemo(() => {
@@ -361,7 +372,7 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
           </button>
         )}
 
-        {budgets.map((budget, index) => {
+        {sortedBudgets.map((budget, index) => {
           const limit = budget.limit;
           const cat = budget.category;
           const isDefault = (budget as any).isDefault || false;

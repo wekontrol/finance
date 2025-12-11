@@ -129,16 +129,28 @@ router.get('/limits', async (req: Request, res: Response) => {
     // Always get budgets for the current user only (no family duplication)
     const limits = await db.all(`
       SELECT * FROM budget_limits WHERE user_id = ?
+      ORDER BY category ASC
     `, [userId]);
 
     console.log(`[Budget GET] User ${userId}: Found ${limits.length} budgets`);
     
-    const formattedLimits = limits.map((l: any) => ({
-      category: l.category,
-      limit: l.limit_amount,
-      isDefault: l.is_default === 1
-    }));
+    // Deduplicate by category (keep first occurrence)
+    const seenCategories = new Set<string>();
+    const formattedLimits = limits
+      .filter((l: any) => {
+        if (seenCategories.has(l.category)) {
+          return false;
+        }
+        seenCategories.add(l.category);
+        return true;
+      })
+      .map((l: any) => ({
+        category: l.category,
+        limit: l.limit_amount,
+        isDefault: l.is_default === 1
+      }));
 
+    console.log(`[Budget GET] After dedup: ${formattedLimits.length} budgets`);
     res.json(formattedLimits);
   } catch (error: any) {
     console.error('Get budget limits error:', error);
