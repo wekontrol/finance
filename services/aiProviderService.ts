@@ -248,3 +248,17 @@ export const analyzeExpensesForWaste = async (transactions: Transaction[], langu
     return geminiService.analyzeExpensesForWaste(transactions, language);
   }
 };
+
+export const predictFutureExpenses = async (transactions: Transaction[], months: number = 3, language: string = 'pt'): Promise<{ predictions: any[], confidence: number, notes: string }> => {
+  const provider = await getProviderForFunction('predict_expenses');
+  
+  if (provider === 'puter') {
+    return puterService.predictFutureExpensesWithPuter(transactions, months, language);
+  } else if (provider === 'openrouter') {
+    return openrouterService.predictFutureExpensesWithOpenRouter(transactions, months, language);
+  } else if (provider === 'groq') {
+    return groqService.predictFutureExpensesWithGroq(transactions, months, language);
+  } else {
+    return geminiService.predictFutureExpenses(transactions, months, language);
+  }
+};
