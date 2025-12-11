@@ -359,7 +359,7 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
           </button>
         )}
 
-        {budgets.map(budget => {
+        {budgets.map((budget, index) => {
           const limit = budget.limit;
           const cat = budget.category;
           const isDefault = (budget as any).isDefault || false;
@@ -369,7 +369,7 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
           const isNearLimit = limit > 0 && spent > limit * 0.9 && !isOverBudget;
 
           return (
-            <div key={cat} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between transition-transform hover:-translate-y-1 duration-300">
+            <div key={`${cat}-${index}`} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between transition-transform hover:-translate-y-1 duration-300">
               <div>
                 <div className="flex justify-between items-start mb-4 gap-2">
                   <div className="flex items-center gap-2 min-w-0">
