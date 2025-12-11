@@ -129,31 +129,38 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
           {/* Dropdown Menu - Mobile optimized */}
           {isCurrencyDropdownOpen && (
-            <div className="fixed sm:absolute bottom-0 sm:bottom-auto sm:top-full left-0 sm:left-0 right-0 sm:right-auto w-full sm:w-56 bg-white dark:bg-slate-800 sm:rounded-xl border-t sm:border border-slate-200 dark:border-slate-700 shadow-xl sm:shadow-lg z-50 overflow-hidden">
-              <div className="max-h-96 sm:max-h-72 overflow-y-auto">
-                {CURRENCIES.map((curr) => (
-                  <button
-                    key={curr.code}
-                    onClick={() => {
-                      setCurrency(curr.code);
-                      setIsCurrencyDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-3.5 py-3 sm:py-2.5 text-xs sm:text-sm transition-colors ${
-                      currency === curr.code
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                    }`}
-                  >
-                    <span className="text-lg">{curr.flag}</span>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                      <span className="font-medium text-left">{curr.code}</span>
-                      <span className="hidden sm:inline text-xs text-slate-500 dark:text-slate-400">({curr.label.split('(')[1]}</span>
-                    </div>
-                  </button>
-                ))}
+            <>
+              {/* Mobile Overlay */}
+              <div 
+                className="fixed inset-0 bg-black/20 dark:bg-black/40 sm:hidden z-40"
+                onClick={() => setIsCurrencyDropdownOpen(false)}
+              />
+              {/* Dropdown */}
+              <div className="absolute left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 top-full mt-2 w-80 sm:w-56 bg-white dark:bg-slate-800 rounded-2xl sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl sm:shadow-lg z-50 overflow-hidden">
+                <div className="max-h-80 overflow-y-auto">
+                  {CURRENCIES.map((curr) => (
+                    <button
+                      key={curr.code}
+                      onClick={() => {
+                        setCurrency(curr.code);
+                        setIsCurrencyDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2 sm:gap-3 px-4 sm:px-3.5 py-2.5 text-xs sm:text-sm transition-colors ${
+                        currency === curr.code
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <span className="text-lg">{curr.flag}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{curr.code}</span>
+                        <span className="hidden sm:inline text-xs text-slate-500 dark:text-slate-400">({curr.label.split('(')[1]}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="h-4 sm:hidden" />
-            </div>
+            </>
           )}
         </div>
         

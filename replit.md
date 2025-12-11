@@ -186,3 +186,30 @@ Your app is now:
 
 You can now publish to production with confidence! 🚀
 
+
+---
+
+## 📱 UI Improvements: Currency Selector (Turno 5)
+
+**Status:** ✅ COMPLETED
+**Date:** December 11, 2025
+
+### What Was Improved
+1. **Desktop Version:** Elegant dropdown with gradient button, flags, and smooth animations
+2. **Mobile Version:** Fixed responsive design with centered overlay dropdown
+
+### Features
+- ✅ 12 currencies with flag emojis
+- ✅ Gradient background button
+- ✅ Click-outside handler to close dropdown
+- ✅ Dark mode support
+- ✅ Mobile overlay with semi-transparent background
+- ✅ Proper positioning (no "pulling up" issues)
+- ✅ Smooth transitions and animations
+
+### Technical Details
+- Used `left-1/2 -translate-x-1/2` for mobile centering
+- Added overlay with `fixed inset-0` for better UX
+- Responsive widths: w-80 (mobile), w-56 (tablet+)
+- Full TypeScript support with proper types
+
