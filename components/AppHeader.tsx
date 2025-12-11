@@ -116,14 +116,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
             className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-2 sm:px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all duration-200 active:scale-95"
           >
-            <Globe size={14} className="hidden sm:block md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
-            <span className="text-lg sm:text-xl">{currentCurrencyData.flag}</span>
-            <span className="text-xs sm:text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 hidden sm:inline">
+            <Globe size={14} className="hidden sm:block md:w-5 md:h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <span className="text-lg sm:text-xl leading-none">{currentCurrencyData.flag}</span>
+            <span className="text-xs sm:text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 hidden sm:inline leading-tight">
               {currency}
             </span>
             <ChevronDown 
               size={14} 
-              className={`hidden sm:block text-slate-500 dark:text-slate-400 transition-transform duration-200 ${isCurrencyDropdownOpen ? 'rotate-180' : ''}`}
+              className={`hidden sm:block text-slate-500 dark:text-slate-400 transition-transform duration-200 flex-shrink-0 ${isCurrencyDropdownOpen ? 'rotate-180' : ''}`}
             />
           </button>
 
