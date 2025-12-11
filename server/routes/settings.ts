@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import db from '../db/schema';
+import * as db from '../db/manager';
 
 const router = Router();
 
 // Get global settings
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const settings = db.prepare(`SELECT * FROM app_settings`).all();
+    const settings = await db.all(`SELECT * FROM app_settings`);
     res.json(settings);
   } catch (error: any) {
     console.error('Error fetching settings:', error);
@@ -15,18 +15,18 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // Update global settings
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   if (req.session?.user?.role !== 'SUPER_ADMIN') {
     return res.status(403).json({ error: 'Super Admin only' });
   }
 
   const { key, value } = req.body;
   try {
-    db.prepare(`
+    await db.run(`
       INSERT INTO app_settings (key, value) 
       VALUES (?, ?)
       ON CONFLICT(key) DO UPDATE SET value = excluded.value
-    `).run(key, value);
+    `, [key, value]);
     res.json({ success: true });
   } catch (error: any) {
     console.error('Error updating settings:', error);
@@ -66,11 +66,11 @@ router.post('/notification-config', (req: Request, res: Response) => {
 });
 
 // Get API configurations
-router.get('/api-configs', (req: Request, res: Response) => {
+router.get('/api-configs', async (req: Request, res: Response) => {
   console.log('[GET /api-configs] User role:', req.session?.user?.role);
   // Temporarily allow all for testing
   try {
-    const configs = db.prepare(`SELECT id, provider, model, created_at FROM api_configurations`).all();
+    const configs = await db.all(`SELECT id, provider, model, created_at FROM api_configurations`);
     console.log('[GET /api-configs] Found configs:', configs);
     res.json(configs);
   } catch (error: any) {
@@ -80,7 +80,7 @@ router.get('/api-configs', (req: Request, res: Response) => {
 });
 
 // Save or update API configuration
-router.post('/api-configs', (req: Request, res: Response) => {
+router.post('/api-configs', async (req: Request, res: Response) => {
   console.log('[POST /api-configs] Request body:', req.body);
   console.log('[POST /api-configs] User:', req.session?.user);
   
@@ -90,21 +90,21 @@ router.post('/api-configs', (req: Request, res: Response) => {
 
     if (id) {
       console.log('[POST /api-configs] Updating config:', id);
-      db.prepare(`UPDATE api_configurations SET api_key = ?, model = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(apiKey, model || null, id);
+      await db.run(`UPDATE api_configurations SET api_key = ?, model = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [apiKey, model || null, id]);
       console.log('[POST /api-configs] Update successful');
     } else {
       // Check if provider already exists
-      const existing = db.prepare(`SELECT id FROM api_configurations WHERE provider = ?`).get(provider) as { id: string } | undefined;
+      const existing = await db.get(`SELECT id FROM api_configurations WHERE provider = ?`, [provider]);
       
       if (existing) {
         // Update existing provider
-        db.prepare(`UPDATE api_configurations SET api_key = ?, model = ?, updated_at = CURRENT_TIMESTAMP WHERE provider = ?`).run(apiKey, model || null, provider);
+        await db.run(`UPDATE api_configurations SET api_key = ?, model = ?, updated_at = CURRENT_TIMESTAMP WHERE provider = ?`, [apiKey, model || null, provider]);
         console.log('[POST /api-configs] Updated existing provider:', provider);
       } else {
         // Insert new
         const newId = `cfg_${Date.now()}`;
         console.log('[POST /api-configs] Inserting new config:', newId, 'provider:', provider);
-        db.prepare(`INSERT INTO api_configurations (id, provider, api_key, model) VALUES (?, ?, ?, ?)`).run(newId, provider, apiKey, model || null);
+        await db.run(`INSERT INTO api_configurations (id, provider, api_key, model) VALUES (?, ?, ?, ?)`, [newId, provider, apiKey, model || null]);
         console.log('[POST /api-configs] Insert successful');
       }
     }
@@ -117,11 +117,11 @@ router.post('/api-configs', (req: Request, res: Response) => {
 });
 
 // Get API configuration value (for frontend to use)
-router.get('/api-config/:provider', (req: Request, res: Response) => {
+router.get('/api-config/:provider', async (req: Request, res: Response) => {
   try {
     const { provider } = req.params;
     console.log('[GET /api-config] Provider:', provider);
-    const config = db.prepare(`SELECT api_key, model FROM api_configurations WHERE provider = ?`).get(provider) as { api_key: string; model: string } | undefined;
+    const config = await db.get(`SELECT api_key, model FROM api_configurations WHERE provider = ?`, [provider]);
     if (config) {
       console.log('[GET /api-config] Found config for', provider);
       res.json({ apiKey: config.api_key, model: config.model });
@@ -136,13 +136,13 @@ router.get('/api-config/:provider', (req: Request, res: Response) => {
 });
 
 // Delete API configuration by ID
-router.delete('/api-configs/:id', (req: Request, res: Response) => {
+router.delete('/api-configs/:id', async (req: Request, res: Response) => {
   console.log('[DELETE /api-configs] ID:', req.params.id);
   // Temporarily allow all for testing
   const { id } = req.params;
   try {
     console.log('[DELETE /api-configs] Deleting:', id);
-    db.prepare(`DELETE FROM api_configurations WHERE id = ?`).run(id);
+    await db.run(`DELETE FROM api_configurations WHERE id = ?`, [id]);
     console.log('[DELETE /api-configs] Delete successful');
     res.json({ success: true });
   } catch (error: any) {
@@ -152,11 +152,11 @@ router.delete('/api-configs/:id', (req: Request, res: Response) => {
 });
 
 // Delete API configuration by provider
-router.delete('/api-config/:provider', (req: Request, res: Response) => {
+router.delete('/api-config/:provider', async (req: Request, res: Response) => {
   const { provider } = req.params;
   console.log('[DELETE /api-config/:provider] Provider:', provider);
   try {
-    db.prepare(`DELETE FROM api_configurations WHERE provider = ?`).run(provider);
+    await db.run(`DELETE FROM api_configurations WHERE provider = ?`, [provider]);
     console.log('[DELETE /api-config/:provider] Deleted provider:', provider);
     res.json({ success: true });
   } catch (error: any) {
@@ -166,9 +166,9 @@ router.delete('/api-config/:provider', (req: Request, res: Response) => {
 });
 
 // Get default AI provider
-router.get('/default-ai-provider', (req: Request, res: Response) => {
+router.get('/default-ai-provider', async (req: Request, res: Response) => {
   try {
-    const config = db.prepare(`SELECT provider FROM api_configurations WHERE is_default = 1`).get() as { provider: string } | undefined;
+    const config = await db.get(`SELECT provider FROM api_configurations WHERE is_default = 1`);
     res.json({ provider: config?.provider || 'google_gemini' });
   } catch (error: any) {
     console.error('[GET /default-ai-provider] Error:', error);
@@ -177,14 +177,14 @@ router.get('/default-ai-provider', (req: Request, res: Response) => {
 });
 
 // Set default AI provider
-router.post('/default-ai-provider', (req: Request, res: Response) => {
+router.post('/default-ai-provider', async (req: Request, res: Response) => {
   const { provider } = req.body;
   console.log('[POST /default-ai-provider] Setting:', provider);
   try {
     // Unset all others
-    db.prepare(`UPDATE api_configurations SET is_default = 0`).run();
+    await db.run(`UPDATE api_configurations SET is_default = 0`);
     // Set this one
-    db.prepare(`UPDATE api_configurations SET is_default = 1 WHERE provider = ?`).run(provider);
+    await db.run(`UPDATE api_configurations SET is_default = 1 WHERE provider = ?`, [provider]);
     console.log('[POST /default-ai-provider] Set successfully');
     res.json({ success: true });
   } catch (error: any) {
@@ -194,11 +194,11 @@ router.post('/default-ai-provider', (req: Request, res: Response) => {
 });
 
 // Get default currency provider
-router.get('/default-currency-provider', (req: Request, res: Response) => {
+router.get('/default-currency-provider', async (req: Request, res: Response) => {
   const userId = req.session?.userId;
   try {
     if (userId) {
-      const user = db.prepare(`SELECT currency_provider_preference FROM users WHERE id = ?`).get(userId) as { currency_provider_preference: string } | undefined;
+      const user = await db.get(`SELECT currency_provider_preference FROM users WHERE id = ?`, [userId]);
       res.json({ provider: user?.currency_provider_preference || 'BNA' });
     } else {
       res.json({ provider: 'BNA' });
@@ -210,7 +210,7 @@ router.get('/default-currency-provider', (req: Request, res: Response) => {
 });
 
 // Set default currency provider
-router.post('/default-currency-provider', (req: Request, res: Response) => {
+router.post('/default-currency-provider', async (req: Request, res: Response) => {
   const userId = req.session?.userId;
   const { provider } = req.body;
   console.log('[POST /default-currency-provider] Setting:', provider, 'for user:', userId);
@@ -224,7 +224,7 @@ router.post('/default-currency-provider', (req: Request, res: Response) => {
   }
 
   try {
-    db.prepare(`UPDATE users SET currency_provider_preference = ? WHERE id = ?`).run(provider, userId);
+    await db.run(`UPDATE users SET currency_provider_preference = ? WHERE id = ?`, [provider, userId]);
     console.log('[POST /default-currency-provider] Set successfully');
     res.json({ success: true, provider });
   } catch (error: any) {
