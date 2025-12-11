@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { User, X, Save, Mail, Lock, Image, FileUp } from 'lucide-react';
+import { User, X, Save, Mail, Lock, Image } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import ModelManagement from './ModelManagement';
 
 interface ProfileModalProps {
   user: any;
@@ -25,7 +24,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onSave }) =>
   });
   const [saved, setSaved] = useState(false);
   const [passwordError, setPasswordError] = useState('');
-  const [showModelManagement, setShowModelManagement] = useState(false);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -93,22 +91,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onSave }) =>
           </button>
         </div>
 
-        {showModelManagement && (
-          <ModelManagement onClose={() => setShowModelManagement(false)} />
-        )}
-
         <div className="space-y-4">
-          {/* Modelos Section */}
-          <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-            <button 
-              onClick={() => setShowModelManagement(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition font-bold text-sm border border-blue-100 dark:border-blue-800"
-            >
-              <FileUp size={18} />
-              Gerenciar Modelos Excel
-            </button>
-          </div>
-
           {/* Avatar Section */}
           <div>
             <label className="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-2">
