@@ -126,18 +126,10 @@ router.get('/limits', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    let limits;
-    if (user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER') {
-      limits = await db.all(`
-        SELECT bl.* FROM budget_limits bl
-        JOIN users u ON bl.user_id = u.id
-        WHERE u.family_id = ? OR bl.user_id = ?
-      `, [user.familyId, userId]);
-    } else {
-      limits = await db.all(`
-        SELECT * FROM budget_limits WHERE user_id = ?
-      `, [userId]);
-    }
+    // Always get budgets for the current user only (no family duplication)
+    const limits = await db.all(`
+      SELECT * FROM budget_limits WHERE user_id = ?
+    `, [userId]);
 
     console.log(`[Budget GET] User ${userId}: Found ${limits.length} budgets`);
     
