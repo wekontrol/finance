@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import db from '../db/schema';
+import * as db from '../db/manager';
 
 const router = Router();
 
@@ -28,7 +28,7 @@ router.get('/progress', requireAuth, requireAdmin, (req: Request, res: Response)
 });
 
 // POST - Create backup
-router.post('/', requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.post('/', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     backupProgress = { current: 10, total: 100, status: 'Inicializando...' };
 
@@ -46,11 +46,11 @@ router.post('/', requireAuth, requireAdmin, (req: Request, res: Response) => {
 
     // Get all tables data
     const tables: Record<string, any[]> = {};
-    const tableNames = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+    const tableNames = await db.all("SELECT name FROM sqlite_master WHERE type='table'");
     
-    tableNames.forEach((t: any) => {
-      tables[t.name] = db.prepare(`SELECT * FROM ${t.name}`).all();
-    });
+    for (const t of tableNames) {
+      tables[t.name] = await db.all(`SELECT * FROM ${t.name}`);
+    }
 
     backupProgress = { current: 85, total: 100, status: 'Preparando arquivo...' };
 
@@ -71,12 +71,13 @@ router.post('/', requireAuth, requireAdmin, (req: Request, res: Response) => {
     });
   } catch (error: any) {
     backupProgress = { current: 0, total: 100, status: 'Erro: ' + error.message };
+    console.error('Create backup error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // POST - Restore backup
-router.post('/restore', requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.post('/restore', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { backupData } = req.body;
 
@@ -87,17 +88,17 @@ router.post('/restore', requireAuth, requireAdmin, (req: Request, res: Response)
     backupProgress = { current: 10, total: 100, status: 'Iniciando restauro...' };
 
     // Clear all existing tables
-    const tableNames = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all();
+    const tableNames = await db.all("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
     
     backupProgress = { current: 20, total: 100, status: 'Limpando banco de dados...' };
     
-    tableNames.forEach((t: any) => {
+    for (const t of tableNames) {
       try {
-        db.prepare(`DELETE FROM ${t.name}`).run();
+        await db.run(`DELETE FROM ${t.name}`);
       } catch (e) {
         // Table might not exist or have constraints
       }
-    });
+    }
 
     backupProgress = { current: 40, total: 100, status: 'Inserindo dados...' };
 
@@ -105,7 +106,7 @@ router.post('/restore', requireAuth, requireAdmin, (req: Request, res: Response)
     const tableList = Object.keys(backupData.tables);
     let processed = 0;
 
-    tableList.forEach(tableName => {
+    for (const tableName of tableList) {
       const rows = backupData.tables[tableName];
       if (rows && rows.length > 0) {
         const firstRow = rows[0];
@@ -113,16 +114,15 @@ router.post('/restore', requireAuth, requireAdmin, (req: Request, res: Response)
         const placeholders = columns.map(() => '?').join(',');
         const sql = `INSERT INTO ${tableName} (${columns.join(',')}) VALUES (${placeholders})`;
         
-        const stmt = db.prepare(sql);
-        rows.forEach((row: any) => {
-          stmt.run(...columns.map(col => row[col]));
-        });
+        for (const row of rows) {
+          await db.run(sql, columns.map(col => row[col]));
+        }
       }
       
       processed++;
       const progress = 40 + Math.floor((processed / tableList.length) * 50);
       backupProgress = { current: progress, total: 100, status: `Restaurando ${tableName}...` };
-    });
+    }
 
     backupProgress = { current: 100, total: 100, status: 'Restauro completo!' };
 
@@ -133,6 +133,7 @@ router.post('/restore', requireAuth, requireAdmin, (req: Request, res: Response)
     });
   } catch (error: any) {
     backupProgress = { current: 0, total: 100, status: 'Erro: ' + error.message };
+    console.error('Restore backup error:', error);
     res.status(500).json({ error: error.message });
   }
 });

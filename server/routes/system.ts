@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
-import db from '../db/schema';
+import * as db from '../db/manager';
 
 const execAsync = promisify(exec);
 const router = Router();
@@ -30,18 +30,18 @@ router.get('/update-progress', requireAuth, (req: Request, res: Response) => {
 
 // POST - Execute system update
 router.post('/update', requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
-  if (updateProgress.current > 0 && updateProgress.current < 100) {
-    return res.status(409).json({ error: 'Update already in progress' });
-  }
-
-  updateProgress = { current: 10, total: 100, status: 'Iniciando atualização...', error: null };
-
   try {
+    if (updateProgress.current > 0 && updateProgress.current < 100) {
+      return res.status(409).json({ error: 'Update already in progress' });
+    }
+
+    updateProgress = { current: 10, total: 100, status: 'Iniciando atualização...', error: null };
+
     // Get project directory
     const projectDir = process.env.PROJECT_DIR || '/var/www/gestor-financeiro' || process.cwd();
     
     // Get GitHub repo URL from settings or use default
-    const repoSetting = db.prepare('SELECT value FROM app_settings WHERE key = ?').get('github_repo_url') as any;
+    const repoSetting = await db.get('SELECT value FROM app_settings WHERE key = ?', ['github_repo_url']) as any;
     const githubRepo = repoSetting?.value || 'origin';
 
     // Step 1: Pull from git
@@ -85,6 +85,7 @@ router.post('/update', requireAuth, requireSuperAdmin, async (req: Request, res:
     const errorMsg = error.message || error.toString();
     updateProgress = { current: 0, total: 100, status: 'Erro na atualização', error: errorMsg };
     
+    console.error('System update error:', error);
     res.status(500).json({ 
       error: errorMsg,
       details: error.stderr || ''

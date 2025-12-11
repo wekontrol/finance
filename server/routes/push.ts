@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import db from '../db/schema';
+import * as db from '../db/manager';
 
 const router = Router();
 
@@ -13,23 +13,23 @@ function requireAuth(req: Request, res: Response, next: Function) {
 router.use(requireAuth);
 
 // Subscribe to push notifications
-router.post('/subscribe', (req: Request, res: Response) => {
-  const userId = req.session!.userId as string;
-  const { subscription } = req.body;
-
-  if (!subscription) {
-    return res.status(400).json({ error: 'Subscription required' });
-  }
-
+router.post('/subscribe', async (req: Request, res: Response) => {
   try {
+    const userId = req.session!.userId as string;
+    const { subscription } = req.body;
+
+    if (!subscription) {
+      return res.status(400).json({ error: 'Subscription required' });
+    }
+
     const id = `ps${Date.now()}`;
     const subscriptionJson = JSON.stringify(subscription);
     
-    db.prepare(`
+    await db.run(`
       INSERT INTO push_subscriptions (id, user_id, subscription, user_agent)
       VALUES (?, ?, ?, ?)
       ON CONFLICT(user_id, subscription) DO UPDATE SET last_active = CURRENT_TIMESTAMP
-    `).run(id, userId, subscriptionJson, req.headers['user-agent'] || '');
+    `, [id, userId, subscriptionJson, req.headers['user-agent'] || '']);
 
     res.json({ message: 'Subscribed to push notifications' });
   } catch (error: any) {
@@ -39,19 +39,19 @@ router.post('/subscribe', (req: Request, res: Response) => {
 });
 
 // Unsubscribe from push notifications
-router.post('/unsubscribe', (req: Request, res: Response) => {
-  const userId = req.session!.userId as string;
-  const { subscription } = req.body;
-
-  if (!subscription) {
-    return res.status(400).json({ error: 'Subscription required' });
-  }
-
+router.post('/unsubscribe', async (req: Request, res: Response) => {
   try {
+    const userId = req.session!.userId as string;
+    const { subscription } = req.body;
+
+    if (!subscription) {
+      return res.status(400).json({ error: 'Subscription required' });
+    }
+
     const subscriptionJson = JSON.stringify(subscription);
-    db.prepare(`
+    await db.run(`
       DELETE FROM push_subscriptions WHERE user_id = ? AND subscription = ?
-    `).run(userId, subscriptionJson);
+    `, [userId, subscriptionJson]);
 
     res.json({ message: 'Unsubscribed from push notifications' });
   } catch (error: any) {
@@ -61,13 +61,13 @@ router.post('/unsubscribe', (req: Request, res: Response) => {
 });
 
 // Get push subscription status
-router.get('/status', (req: Request, res: Response) => {
-  const userId = req.session!.userId as string;
-
+router.get('/status', async (req: Request, res: Response) => {
   try {
-    const count = db.prepare(`
+    const userId = req.session!.userId as string;
+
+    const count = await db.get(`
       SELECT COUNT(*) as count FROM push_subscriptions WHERE user_id = ?
-    `).get(userId) as any;
+    `, [userId]) as any;
 
     res.json({ 
       isSubscribed: count.count > 0,
