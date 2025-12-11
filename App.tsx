@@ -331,17 +331,11 @@ const App: React.FC = () => {
 
   const saveBudget = async (budget: BudgetLimit) => {
     try {
-      const result = await budgetApi.saveBudget(budget);
-      // Add new budget at beginning, remove old one if exists
-      const filtered = budgets.filter(b => b.category !== budget.category);
-      setBudgets([result, ...filtered]);
-      // Reload all budgets from server to ensure they're persisted
-      setTimeout(() => {
-        budgetApi.getLimits().then(data => {
-          setBudgets(data);
-          console.log(`[saveBudget] Reloaded ${data.length} budgets from server`);
-        }).catch(err => console.error('Error reloading budgets:', err));
-      }, 500);
+      await budgetApi.saveBudget(budget);
+      // Reload all budgets from server to ensure they're persisted and no duplicates
+      const data = await budgetApi.getLimits();
+      setBudgets(data);
+      console.log(`[saveBudget] Saved and reloaded ${data.length} budgets from server`);
     } catch (error) {
       console.error('Error saving budget:', error);
     }
