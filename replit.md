@@ -32,3 +32,42 @@ The application features a fully translated user interface supporting dynamic la
 -   **Libraries:** `jszip` (for ZIP file generation/parsing), `jspdf` + `jspdf-autotable` (for PDF exports).
 -   **Database:** SQLite.
 -   **Currency API:** Fawaz Ahmed Currency API (CDN-hosted).
+---
+
+## 📊 EXCEL IMPORT/EXPORT SYSTEM (Turn 8)
+
+**Status:** ✅ FULLY IMPLEMENTED
+**Date:** December 11, 2025
+
+### Features Added
+1. **Excel Import**
+   - ✅ Button "Importar" (purple, UploadCloud icon)
+   - ✅ Accepts .xlsx and .xls files
+   - ✅ Automatic validation (date, description, amount)
+   - ✅ Parser using XLSX library
+   - ✅ Bulk import with success feedback
+   - ✅ Auto-reset to page 1 after import
+
+2. **Excel Template Download**
+   - ✅ Button "Modelo" (blue, Download icon)
+   - ✅ Pre-filled with 3 example transactions
+   - ✅ Portuguese instructions included
+   - ✅ Formatted columns with proper widths
+   - ✅ File: "modelo_transacoes.xlsx"
+
+3. **Excel Structure**
+   - Headers: Data, Descrição, Categoria, Valor, Tipo, Recorrente, Frequência
+   - Data format: YYYY-MM-DD
+   - Tipo: "Receita" or "Despesa"
+   - Recorrente: "Sim" or "Não"
+
+### Files Modified
+- ✅ `services/excelService.ts` - New service with import/export functions
+- ✅ `components/Transactions.tsx` - Added 3 new buttons (Modelo, Importar, CSV)
+- ✅ `package.json` - Added xlsx library
+
+### How to Use
+1. Click "Modelo" to download template
+2. Fill your transactions in Excel
+3. Click "Importar" to upload and auto-import all transactions
+4. System validates and shows success count

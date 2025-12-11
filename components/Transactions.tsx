@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Transaction, TransactionType, TransactionAttachment } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { categorizeTransaction, parseTransactionFromText, parseTransactionFromAudio, parseTransactionFromReceipt } from '../services/aiProviderService';
+import { exportTransactionsToExcel, downloadExcelTemplate, importTransactionsFromExcel } from '../services/excelService';
 import { Plus, Paperclip, Loader2, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle, Search, Sparkles, Mic, Square, RefreshCw, CalendarClock, CreditCard, X, ChevronLeft, ChevronRight, FileText, FileSpreadsheet, UploadCloud, File as FileIcon, Download, Camera, Check, RotateCcw } from 'lucide-react';
 
 interface TransactionsProps {
@@ -58,7 +59,9 @@ const Transactions: React.FC<TransactionsProps> = ({
     frequency: 'monthly' as 'monthly' | 'weekly' | 'biweekly' | 'quarterly' | 'semiannual' | 'yearly'
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const inputClass = "w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-medium focus:ring-2 focus:ring-primary-500 outline-none transition-all";
 
   // Cleanup camera on unmount
@@ -86,6 +89,39 @@ const Transactions: React.FC<TransactionsProps> = ({
       frequency: transaction.frequency || 'monthly'
     });
     setShowForm(true);
+  };
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const importedTransactions = await importTransactionsFromExcel(file);
+      let successCount = 0;
+
+      for (const transaction of importedTransactions) {
+        try {
+          await addTransaction({
+            ...transaction,
+            userId: currentUserId
+          });
+          successCount++;
+        } catch (error) {
+          console.error('Erro ao adicionar transação:', error);
+        }
+      }
+
+      alert(`✅ ${successCount}/${importedTransactions.length} transações importadas com sucesso!`);
+      setCurrentPage(1);
+    } catch (error) {
+      alert(`❌ Erro ao importar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleAddNew = () => {
@@ -488,7 +524,7 @@ const Transactions: React.FC<TransactionsProps> = ({
         </div>
 
         <div className="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button 
               onClick={() => onExport('PDF')}
               className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-300 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/40 transition font-bold text-sm border border-rose-100 dark:border-rose-800 active:scale-95"
@@ -501,8 +537,31 @@ const Transactions: React.FC<TransactionsProps> = ({
               className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition font-bold text-sm border border-emerald-100 dark:border-emerald-800 active:scale-95"
               title="Exportar Excel (CSV)"
             >
-              <FileSpreadsheet size={18} className="mr-2" /> Excel
+              <FileSpreadsheet size={18} className="mr-2" /> CSV
             </button>
+            <button 
+              onClick={() => downloadExcelTemplate()}
+              className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition font-bold text-sm border border-blue-100 dark:border-blue-800 active:scale-95"
+              title="Baixar modelo Excel"
+            >
+              <Download size={18} className="mr-2" /> Modelo
+            </button>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-300 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition font-bold text-sm border border-purple-100 dark:border-purple-800 active:scale-95 disabled:opacity-50"
+              title="Importar transações de Excel"
+            >
+              {isImporting ? <Loader2 size={18} className="mr-2 animate-spin" /> : <UploadCloud size={18} className="mr-2" />}
+              {isImporting ? 'Importando...' : 'Importar'}
+            </button>
+            <input 
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleImportExcel}
+              className="hidden"
+            />
           </div>
 
           <div className="relative flex-1 md:w-56">
