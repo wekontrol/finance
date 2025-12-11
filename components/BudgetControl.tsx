@@ -27,6 +27,10 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
   currencyFormatter 
 }) => {
   const { t } = useLanguage();
+  
+  // Ensure budgets is an array and sort alphabetically with deduplication
+  const safeBudgets = Array.isArray(budgets) ? budgets : [];
+  
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState<string>('');
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -39,19 +43,19 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
 
   // Get all existing budget categories for current user and deduplicate
   const existingBudgetCategories = useMemo(() => {
-    return new Set(budgets.map(b => b.category));
-  }, [budgets]);
+    return new Set(safeBudgets.map(b => b.category));
+  }, [safeBudgets]);
 
   // Sort budgets alphabetically and deduplicate
   const sortedBudgets = useMemo(() => {
     const seen = new Set<string>();
-    const unique = budgets.filter(b => {
+    const unique = safeBudgets.filter(b => {
       if (seen.has(b.category)) return false;
       seen.add(b.category);
       return true;
     });
     return unique.sort((a, b) => a.category.localeCompare(b.category));
-  }, [budgets]);
+  }, [safeBudgets]);
 
   const categorySpending = useMemo(() => {
     const now = new Date();

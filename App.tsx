@@ -98,6 +98,7 @@ const App: React.FC = () => {
   const [familyEvents, setFamilyEvents] = useState<FamilyEvent[]>([]);
   const [savedSimulations, setSavedSimulations] = useState<SavedSimulation[]>(() => safeLoad('savedSimulations', []));
   const [notifications, setNotifications] = useState<AppNotification[]>(() => safeLoad('notifications', []));
+  const isLoadingRef = useRef(false); // Prevent concurrent loadAllData calls
 
   // Listen for system theme preference changes
   useEffect(() => {
@@ -141,6 +142,13 @@ const App: React.FC = () => {
   }, []);
 
   const loadAllData = async () => {
+    // Prevent concurrent calls (race condition fix)
+    if (isLoadingRef.current) {
+      console.log('[loadAllData] Already loading, skipping duplicate call');
+      return;
+    }
+    
+    isLoadingRef.current = true;
     try {
       // Create default budgets for the user if they don't exist (BEFORE loading)
       try {
@@ -169,9 +177,11 @@ const App: React.FC = () => {
       setFamilyTasks(tasksData);
       setFamilyEvents(eventsData);
       setBudgets(budgetsData);
-      console.log(`[loadAllData] Budgets loaded: ${budgetsData.length}`);
+      console.log(`[loadAllData] SUCCESS: Budgets loaded: ${budgetsData.length}`);
     } catch (error) {
       console.error('Error loading data:', error);
+    } finally {
+      isLoadingRef.current = false;
     }
   };
 
