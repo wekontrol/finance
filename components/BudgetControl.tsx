@@ -167,7 +167,7 @@ const BudgetControl: React.FC<BudgetControlProps> = ({
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 rounded-3xl text-white shadow-lg shadow-blue-500/20 relative overflow-hidden">
-         <div className="absolute -right-10 -top-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+         <div className="absolute -right-8 -top-8 md:-right-16 md:-top-16 w-48 h-48 md:w-64 md:h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
          <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold flex items-center mb-2">

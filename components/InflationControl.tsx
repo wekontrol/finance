@@ -83,7 +83,7 @@ const InflationControl: React.FC<InflationControlProps> = ({
     <div className="space-y-6 md:space-y-8 animate-fade-in pb-10 w-full max-w-full overflow-hidden">
       {/* Header Promocional */}
       <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-6 md:p-8 rounded-3xl text-white shadow-lg shadow-rose-500/20 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-white opacity-10 rounded-full blur-3xl -mr-8 -mt-8 md:-mr-16 md:-mt-16 pointer-events-none"></div>
         
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center relative z-10 gap-4 w-full">
           <div className="max-w-xl min-w-0">

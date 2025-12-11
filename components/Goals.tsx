@@ -160,7 +160,7 @@ const Goals: React.FC<GoalsProps> = ({
               className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-2xl relative overflow-hidden"
               style={{ background: `linear-gradient(135deg, ${selectedGoal.color}, #1e293b)` }}
              >
-               <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+               <div className="absolute top-0 right-0 w-32 h-32 md:w-40 md:h-40 bg-white opacity-10 rounded-full blur-3xl -mr-6 -mt-6 md:-mr-10 md:-mt-10 pointer-events-none"></div>
                <div className="flex justify-between items-start mb-8 relative z-10">
                  <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl">
                    <Target size={32} />
