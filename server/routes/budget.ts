@@ -177,10 +177,11 @@ router.post('/create-defaults', async (req: Request, res: Response) => {
     ];
 
     let created = 0;
+    let updated = 0;
     for (const budget of defaultBudgets) {
       try {
         const existing = await db.get(`
-          SELECT id FROM budget_limits WHERE user_id = ? AND category = ?
+          SELECT id, limit_amount FROM budget_limits WHERE user_id = ? AND category = ?
         `, [userId, budget.category]);
 
         if (!existing) {
@@ -190,14 +191,23 @@ router.post('/create-defaults', async (req: Request, res: Response) => {
             VALUES (?, ?, ?, ?, 1)
           `, [budgetId, userId, budget.category, budget.limit]);
           created++;
+          console.log(`Created default budget: ${budget.category} = ${budget.limit} for user ${userId}`);
+        } else if (existing.limit_amount !== budget.limit) {
+          // Update with correct default value if different
+          await db.run(`
+            UPDATE budget_limits SET limit_amount = ?, is_default = 1 
+            WHERE user_id = ? AND category = ?
+          `, [budget.limit, userId, budget.category]);
+          updated++;
+          console.log(`Updated default budget: ${budget.category} from ${existing.limit_amount} to ${budget.limit} for user ${userId}`);
         }
       } catch (e) {
-        console.error(`Failed to create budget for ${budget.category}:`, e);
+        console.error(`Failed to create/update budget for ${budget.category}:`, e);
       }
     }
 
-    console.log(`✅ Created ${created}/${defaultBudgets.length} default budgets for user ${userId}`);
-    res.json({ message: `Created ${created} default budgets`, created });
+    console.log(`✅ Created ${created}/${defaultBudgets.length} default budgets, Updated ${updated} for user ${userId}`);
+    res.json({ message: `Created ${created}, Updated ${updated} default budgets`, created, updated });
   } catch (error: any) {
     console.error('Create default budgets error:', error);
     res.status(500).json({ error: 'Failed to create default budgets', details: error.message });
