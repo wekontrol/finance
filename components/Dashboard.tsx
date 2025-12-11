@@ -291,7 +291,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {/* AI Behavior Analysis Widget */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden min-w-0">
-         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+         <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-white opacity-5 rounded-full blur-3xl -mr-24 -mt-24 md:-mr-32 md:-mt-32 pointer-events-none"></div>
          
          <div className="relative z-10">
             <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
@@ -345,7 +345,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="dashboard-cards">
           {/* Saldo */}
           <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-6 text-white shadow-lg shadow-indigo-500/20 relative overflow-hidden min-w-0 transition-all duration-300 border border-indigo-400/30 hover:border-indigo-300/60 group">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="absolute top-0 right-0 -mt-2 -mr-2 w-20 h-20 md:w-24 md:h-24 bg-white opacity-10 rounded-full blur-2xl pointer-events-none"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm group-hover:scale-110 transition-transform">
                 <Wallet className="text-white" size={24} />
