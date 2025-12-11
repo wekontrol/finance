@@ -138,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div className="p-4 border-t border-slate-50 dark:border-slate-800">
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 flex items-center mb-2 border border-slate-100 dark:border-slate-700 group transition-colors hover:border-slate-200 dark:hover:border-slate-600 active:scale-95 cursor-pointer" onClick={handleProfileClick}>
+          <div className="bg-white/40 md:bg-white/60 dark:bg-slate-800/50 rounded-xl p-3 flex items-center mb-2 border border-slate-100 dark:border-slate-700 group transition-colors hover:border-slate-200 dark:hover:border-slate-600 active:scale-95 cursor-pointer" onClick={handleProfileClick}>
             <div className="relative shrink-0" title="Editar perfil">
               <img src={currentUser.avatar} alt="Avatar" className="w-9 h-9 rounded-full border border-white dark:border-slate-600 shadow-sm object-cover group-hover:opacity-80 transition" />
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition">
@@ -156,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <button 
             onClick={logout}
-            className="flex items-center justify-center w-full px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 rounded-xl transition-all active:scale-95"
+            className="flex items-center justify-center w-full px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50/60 md:hover:bg-rose-100/80 dark:hover:bg-rose-900/20 rounded-xl transition-all active:scale-95"
           >
             <LogOut size={16} className="mr-2 shrink-0" />
             Encerrar Sessão
