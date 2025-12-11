@@ -64,6 +64,7 @@ const Transactions: React.FC<TransactionsProps> = ({
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputClass = "w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-medium focus:ring-2 focus:ring-primary-500 outline-none transition-all";
@@ -125,7 +126,7 @@ const Transactions: React.FC<TransactionsProps> = ({
 
       for (const transaction of importedTransactions) {
         try {
-          await addTransaction({
+          addTransaction({
             ...transaction,
             userId: currentUserId
           });
@@ -135,8 +136,9 @@ const Transactions: React.FC<TransactionsProps> = ({
         }
       }
 
-      alert(`✅ ${successCount}/${importedTransactions.length} transações importadas com sucesso!`);
+      setSuccessMessage(`✅ ${successCount}/${importedTransactions.length} transações importadas com sucesso!`);
       setCurrentPage(1);
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       alert(`❌ Erro ao importar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
@@ -958,6 +960,13 @@ const Transactions: React.FC<TransactionsProps> = ({
       {/* VIEW: History Table */}
       {activeTab === 'history' && (
         <>
+          {/* Success Message Toast */}
+          {successMessage && (
+            <div className="mb-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 font-bold text-sm animate-fade-in">
+              {successMessage}
+            </div>
+          )}
+
           {/* Botão Deletar Selecionadas */}
           {selectedTransactions.size > 0 && (
             <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 flex items-center justify-between">
@@ -966,9 +975,12 @@ const Transactions: React.FC<TransactionsProps> = ({
               </span>
               <button
                 onClick={() => {
-                  if (confirm(`Tem certeza que quer deletar ${selectedTransactions.size} transação(ões)?`)) {
+                  const count = selectedTransactions.size;
+                  if (confirm(`Tem certeza que quer deletar ${count} transação(ões)?`)) {
                     selectedTransactions.forEach(id => deleteTransaction(id));
+                    setSuccessMessage(`✅ ${count} transação(ões) deletada(s) com sucesso!`);
                     setSelectedTransactions(new Set());
+                    setTimeout(() => setSuccessMessage(null), 3000);
                   }
                 }}
                 className="px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition font-bold text-sm active:scale-95 flex items-center gap-2"
