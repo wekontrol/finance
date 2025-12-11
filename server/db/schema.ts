@@ -85,6 +85,18 @@ export function initializeDatabase() {
     // Column already exists
   }
 
+  try {
+    db.exec(`CREATE TABLE IF NOT EXISTS ai_function_providers (
+      id TEXT PRIMARY KEY,
+      function_name TEXT NOT NULL UNIQUE,
+      provider TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );`);
+  } catch (e) {
+    // Table already exists
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS translations (
       id TEXT PRIMARY KEY,

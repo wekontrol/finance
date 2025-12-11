@@ -13,6 +13,7 @@ import NotificationSettings from './NotificationSettings';
 import TranslationManager from './TranslationManager';
 import CurrencyProviderSettings from './CurrencyProviderSettings';
 import ModelManagement from './ModelManagement';
+import AIProviderSettings from './AIProviderSettings';
 
 interface AdminPanelProps {
   appName: string;
@@ -1367,7 +1368,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
-        {/* 9. Currency Providers Section */}
+        {/* 9. AI Function Providers (Only Super Admin) */}
+        {isSuperAdmin && (
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div onClick={() => toggleSection('ai-functions')} className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+              <div className="flex items-center">
+                <div className="p-2 bg-cyan-100 text-cyan-600 rounded-lg mr-4 shrink-0"><Bot size={20} /></div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white">🤖 Provedores por Funcionalidade</h3>
+              </div>
+              {expandedSection === 'ai-functions' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </div>
+            {expandedSection === 'ai-functions' && (
+              <div className="p-8 border-t border-slate-100 dark:border-slate-700 animate-slide-down">
+                <AIProviderSettings onClose={() => toggleSection('ai-functions')} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 10. Currency Providers Section */}
         {isSuperAdmin && (
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
             <div onClick={() => toggleSection('currency')} className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
@@ -1388,7 +1407,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
-        {/* 9. Excel Models Management (Only Super Admin) */}
+        {/* 11. Excel Models Management (Only Super Admin) */}
         {isSuperAdmin && (
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
             <div onClick={() => toggleSection('models')} className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">

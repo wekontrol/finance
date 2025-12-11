@@ -254,6 +254,43 @@ router.post('/default-currency-provider', async (req: Request, res: Response) =>
   }
 });
 
+// Get AI function providers configuration
+router.get('/ai-function-providers', async (req: Request, res: Response) => {
+  try {
+    const configs = await db.all(`SELECT function_name, provider FROM ai_function_providers ORDER BY function_name`);
+    const configMap: Record<string, string> = {};
+    configs.forEach((config: any) => {
+      configMap[config.function_name] = config.provider;
+    });
+    res.json(configMap);
+  } catch (error: any) {
+    console.error('[GET /ai-function-providers] Error:', error);
+    res.json({});
+  }
+});
+
+// Set AI function provider
+router.post('/ai-function-providers', async (req: Request, res: Response) => {
+  const { functionName, provider } = req.body;
+  
+  if (!functionName || !provider) {
+    return res.status(400).json({ error: 'functionName and provider required' });
+  }
+
+  try {
+    const id = `afp_${functionName}_${Date.now()}`;
+    await db.run(`
+      INSERT INTO ai_function_providers (id, function_name, provider, updated_at)
+      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(function_name) DO UPDATE SET provider = excluded.provider, updated_at = CURRENT_TIMESTAMP
+    `, [id, functionName, provider]);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('[POST /ai-function-providers] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Fallback rates (used if API fails)
 const FALLBACK_RATES: Record<string, Record<string, number>> = {
   BNA: {

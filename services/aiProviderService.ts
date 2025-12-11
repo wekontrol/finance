@@ -11,6 +11,7 @@ import { Transaction, UserBehaviorAnalysis, LoanSimulation } from '../types';
 type AIProvider = 'google_gemini' | 'puter' | 'openrouter' | 'groq';
 
 let cachedProvider: AIProvider | null = null;
+let cachedFunctionProviders: Record<string, AIProvider> = {};
 
 // Get default AI provider from server
 export const getDefaultProvider = async (): Promise<AIProvider> => {
@@ -33,6 +34,31 @@ export const getDefaultProvider = async (): Promise<AIProvider> => {
   return 'google_gemini'; // fallback
 };
 
+// Get provider for specific function
+export const getProviderForFunction = async (functionName: string): Promise<AIProvider> => {
+  try {
+    // Load all function providers if not cached
+    if (Object.keys(cachedFunctionProviders).length === 0) {
+      const response = await fetch('/api/settings/ai-function-providers', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        cachedFunctionProviders = await response.json();
+      }
+    }
+
+    // Return specific function provider or default
+    if (cachedFunctionProviders[functionName]) {
+      return cachedFunctionProviders[functionName] as AIProvider;
+    }
+  } catch (error) {
+    console.error(`Error getting provider for function ${functionName}:`, error);
+  }
+
+  // Fall back to default provider
+  return await getDefaultProvider();
+};
+
 export const setDefaultProvider = async (provider: AIProvider): Promise<void> => {
   try {
     const response = await fetch('/api/settings/default-ai-provider', {
@@ -50,9 +76,27 @@ export const setDefaultProvider = async (provider: AIProvider): Promise<void> =>
   }
 };
 
+// Set provider for specific function
+export const setProviderForFunction = async (functionName: string, provider: AIProvider): Promise<void> => {
+  try {
+    const response = await fetch('/api/settings/ai-function-providers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ functionName, provider })
+    });
+    if (response.ok) {
+      cachedFunctionProviders[functionName] = provider;
+    }
+  } catch (error) {
+    console.error(`Error setting provider for function ${functionName}:`, error);
+    throw error;
+  }
+};
+
 // Routes all AI services to the correct provider
 export const categorizeTransaction = async (description: string, history: Transaction[] = []): Promise<string> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('categorize');
   
   if (provider === 'puter') {
     return puterService.categorizeTransactionWithPuter(description);
@@ -66,7 +110,7 @@ export const categorizeTransaction = async (description: string, history: Transa
 };
 
 export const getFinancialAdvice = async (transactions: any[], goals: any[], language: string = 'pt'): Promise<string> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('financial_advice');
   
   if (provider === 'puter') {
     return puterService.getFinancialAdviceWithPuter(transactions, goals, language);
@@ -80,7 +124,7 @@ export const getFinancialAdvice = async (transactions: any[], goals: any[], lang
 };
 
 export const analyzeLoanDocument = async (text: string): Promise<Partial<LoanSimulation>> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('analyze_loan');
   
   if (provider === 'puter') {
     return puterService.analyzeLoanDocumentWithPuter(text);
@@ -94,7 +138,7 @@ export const analyzeLoanDocument = async (text: string): Promise<Partial<LoanSim
 };
 
 export const analyzeUserBehavior = async (transactions: Transaction[], language: string = 'pt'): Promise<UserBehaviorAnalysis> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('analyze_behavior');
   
   if (provider === 'puter') {
     return puterService.analyzeUserBehaviorWithPuter(transactions, language);
@@ -108,7 +152,7 @@ export const analyzeUserBehavior = async (transactions: Transaction[], language:
 };
 
 export const parseTransactionFromText = async (text: string): Promise<Partial<Transaction>> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('parse_text');
   
   if (provider === 'puter') {
     return puterService.parseTransactionFromTextWithPuter(text);
@@ -122,7 +166,7 @@ export const parseTransactionFromText = async (text: string): Promise<Partial<Tr
 };
 
 export const parseTransactionFromAudio = async (base64Audio: string): Promise<Partial<Transaction>> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('parse_audio');
   
   if (provider === 'puter') {
     return puterService.parseTransactionFromAudioWithPuter(base64Audio);
@@ -136,7 +180,7 @@ export const parseTransactionFromAudio = async (base64Audio: string): Promise<Pa
 };
 
 export const suggestBudgets = async (transactions: Transaction[]): Promise<any[]> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('suggest_budgets');
   
   if (provider === 'puter') {
     return puterService.suggestBudgetsWithPuter(transactions);
@@ -150,7 +194,7 @@ export const suggestBudgets = async (transactions: Transaction[]): Promise<any[]
 };
 
 export const getAiChatResponse = async (message: string): Promise<string> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('chat');
   
   if (provider === 'puter') {
     return puterService.getAiChatResponseWithPuter(message);
@@ -164,7 +208,7 @@ export const getAiChatResponse = async (message: string): Promise<string> => {
 };
 
 export const getAiChatResponseStreaming = async (message: string): Promise<AsyncIterable<string>> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('chat_streaming');
   
   if (provider === 'puter') {
     return puterService.getAiChatResponseStreamingWithPuter(message);
@@ -178,7 +222,7 @@ export const getAiChatResponseStreaming = async (message: string): Promise<Async
 };
 
 export const parseTransactionFromReceipt = async (imageUrl: string): Promise<Partial<Transaction>> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('parse_receipt');
   
   if (provider === 'puter') {
     return puterService.parseTransactionFromReceiptWithPuter(imageUrl);
@@ -192,7 +236,7 @@ export const parseTransactionFromReceipt = async (imageUrl: string): Promise<Par
 };
 
 export const analyzeExpensesForWaste = async (transactions: Transaction[], language: string = 'pt'): Promise<{ wasteIndicators: string[], totalWaste: number, suggestions: string[] }> => {
-  const provider = await getDefaultProvider();
+  const provider = await getProviderForFunction('analyze_waste');
   
   if (provider === 'puter') {
     return puterService.analyzeExpensesForWasteWithPuter(transactions, language);
@@ -202,19 +246,5 @@ export const analyzeExpensesForWaste = async (transactions: Transaction[], langu
     return groqService.analyzeExpensesForWasteWithGroq(transactions, language);
   } else {
     return geminiService.analyzeExpensesForWaste(transactions, language);
-  }
-};
-
-export const predictFutureExpenses = async (transactions: Transaction[], months: number = 3, language: string = 'pt'): Promise<{ predictions: any[], confidence: number, notes: string }> => {
-  const provider = await getDefaultProvider();
-  
-  if (provider === 'puter') {
-    return puterService.predictFutureExpensesWithPuter(transactions, months, language);
-  } else if (provider === 'openrouter') {
-    return openrouterService.predictFutureExpensesWithOpenRouter(transactions, months, language);
-  } else if (provider === 'groq') {
-    return groqService.predictFutureExpensesWithGroq(transactions, language);
-  } else {
-    return geminiService.predictFutureExpenses(transactions, months, language);
   }
 };
