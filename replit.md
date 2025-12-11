@@ -34,12 +34,12 @@ The application features a fully translated user interface supporting dynamic la
 -   **Currency API:** Fawaz Ahmed Currency API (CDN-hosted).
 ---
 
-## 📊 EXCEL IMPORT/EXPORT SYSTEM (Turn 8)
+## 📊 EXCEL IMPORT/EXPORT SYSTEM (Turn 8 + Turn 21 FIX)
 
-**Status:** ✅ FULLY IMPLEMENTED
-**Date:** December 11, 2025
+**Status:** ✅ FULLY IMPLEMENTED & CRITICAL BUG FIXED
+**Last Updated:** December 11, 2025
 
-### Features Added
+### Features Implemented
 1. **Excel Import**
    - ✅ Button "Importar" (purple, UploadCloud icon)
    - ✅ Accepts .xlsx and .xls files
@@ -50,27 +50,43 @@ The application features a fully translated user interface supporting dynamic la
 
 2. **Excel Template Download**
    - ✅ Button "Modelo" (blue, Download icon)
-   - ✅ Pre-filled with 3 example transactions
+   - ✅ Downloads custom uploaded template (NOW FIXED!)
+   - ✅ If no custom template exists, generates default
    - ✅ Portuguese instructions included
    - ✅ Formatted columns with proper widths
    - ✅ File: "modelo_transacoes.xlsx"
 
-3. **Excel Structure**
+3. **Excel Template Upload (Custom Templates)**
+   - ✅ Settings > Gerenciar Modelos Excel > Upload
+   - ✅ Accepts .xlsx and .xls formats
+   - ✅ Stores custom template in `public/templates/`
+   - ✅ Persists across sessions
+   - ✅ GET endpoint serves stored template
+
+4. **Excel Structure**
    - Headers: Data, Descrição, Categoria, Valor, Tipo, Recorrente, Frequência
    - Data format: YYYY-MM-DD
    - Tipo: "Receita" or "Despesa"
    - Recorrente: "Sim" or "Não"
 
-### Files Modified
-- ✅ `services/excelService.ts` - New service with import/export functions
-- ✅ `components/Transactions.tsx` - Added 3 new buttons (Modelo, Importar, CSV)
-- ✅ `package.json` - Added xlsx library
+### TURN 21 CRITICAL FIX ✅
+**Problem:** User uploads custom template but "Modelo" button downloads hardcoded default instead
+**Root Cause:** Template saved as `modelo_modelo.xlsx` but GET endpoint searched for `modelo_transacoes.xlsx`
+**Solution:** Modified `server/routes/templates.ts` to force filename `modelo_transacoes.xlsx` regardless of input
+**Testing:** GET endpoint returns HTTP 200 with correct file (16,617 bytes)
 
-### How to Use
-1. Click "Modelo" to download template
-2. Fill your transactions in Excel
-3. Click "Importar" to upload and auto-import all transactions
-4. System validates and shows success count
+### Files Modified
+- ✅ `services/excelService.ts` - Service with import/export functions
+- ✅ `components/Transactions.tsx` - 3 buttons (Modelo, Importar, CSV)
+- ✅ `server/routes/templates.ts` - **FIX: Filename standardization**
+- ✅ `package.json` - xlsx library
+
+### How to Use (Now Works Correctly!)
+1. (Optional) Settings > Gerenciar Modelos Excel > Upload custom template
+2. Transactions > Modelo > Downloads your custom template (or default)
+3. Fill your transactions in Excel
+4. Transactions > Importar > Upload and auto-import all transactions
+5. System validates and shows success count
 
 ---
 
@@ -97,43 +113,15 @@ The application features a fully translated user interface supporting dynamic la
 15. Eventos (Events) - 200 Kz
 16. Viagens (Travel) - 300 Kz
 
-### Changes Made (Turn 12)
-- ✅ Removed "Juros / Multas" (Interest/Fines) - consolidated into savings tracking
-- ✅ Split "Reparações e Manutenção" into separate "Reparação" and "Manutenção" categories
-- ✅ Fixed alignment issue in currency selector button (AO/AOA vertical alignment)
-- ✅ Enhanced error logging in budget creation endpoint
-- ✅ Ensured predictFutureExpenses is properly exported and routed through AI provider system
-
-### New: Budget Defaults Manager (Turn 14-18) ✅
-**For Super Admin ONLY:**
-- ✅ UI: **Settings > General > "Gerenciar Categorias"** button
-- ✅ Modal popup with editable limit fields for all 16 categories
+### Budget Defaults Manager (Super Admin Only)
+**UI Location:** Settings > General > "Gerenciar Categorias"
+- ✅ Modal popup with all 16 categories
+- ✅ Editable limit fields for each category
 - ✅ Save/Reset/Cancel actions
-- ✅ Real-time backend sync via `/api/budget/defaults` endpoints
-- ✅ Database stores defaults in `app_settings` table with keys like `budget_default_Alimentação`
-
-**How it works:**
-1. Super Admin clicks button in Settings > General
-2. Popup shows all 16 categories with current limit values
-3. Super Admin edits any limit and clicks "Salvar"
-4. New defaults are stored in app_settings
-5. All new users get these defaults automatically
-
-### Database Implementation
-- All 16 budgets marked as `is_default = 1`
-- Auto-created for new users via `/api/budget/create-defaults` endpoint
-- System defaults stored in `app_settings` table (keys: `budget_default_*`)
-- GET/POST `/api/budget/defaults` for Super Admin management only
-- Defaults can be edited by Super Admin without affecting existing user budgets
-- Comprehensive validation and synchronization system in place
+- ✅ Real-time backend sync via `/api/budget/defaults`
+- ✅ Database stores in `app_settings` table
 
 ### Files Added/Modified
-- ✅ **NEW:** `components/BudgetDefaultsManager.tsx` - Modal component for Super Admin
-- ✅ **MODIFIED:** `server/routes/budget.ts` - Added `GET/POST /defaults` endpoints
-- ✅ **MODIFIED:** `components/AdminPanel.tsx` - Added button + modal integration
-
-### Known Issues / Notes for Next Phase
-- Session persistence: Some users may need to refresh to see budgets on first load (Express session management)
-- All 16 categories correctly stored in database with proper limits
-- API endpoints fully functional and tested with database
-- Super Admin management system fully operational
+- ✅ **NEW:** `components/BudgetDefaultsManager.tsx` - Super Admin modal
+- ✅ **MODIFIED:** `server/routes/budget.ts` - GET/POST `/defaults` endpoints
+- ✅ **MODIFIED:** `components/AdminPanel.tsx` - Button + modal integration

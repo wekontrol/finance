@@ -16,9 +16,8 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const modelType = (req.body.modelType || 'modelo');
     const extension = file.originalname.endsWith('.xls') ? '.xls' : '.xlsx';
-    cb(null, `modelo_${modelType}${extension}`);
+    cb(null, `modelo_transacoes${extension}`);
   }
 });
 
