@@ -71,3 +71,40 @@ The application features a fully translated user interface supporting dynamic la
 2. Fill your transactions in Excel
 3. Click "Importar" to upload and auto-import all transactions
 4. System validates and shows success count
+
+---
+
+## 🎯 DEFAULT BUDGETS SYSTEM (Turn 12)
+
+**Status:** ✅ FULLY IMPLEMENTED
+**Date:** December 11, 2025
+
+### 16 Default Budget Categories
+1. Renda (Income)
+2. Energia (Energy)
+3. Água (Water)
+4. Transporte (Transportation)
+5. Alimentação (Food)
+6. Combustível (Fuel)
+7. Compras domésticas (Household Shopping)
+8. Lazer (Entertainment)
+9. Roupas (Clothing)
+10. Saúde (Health)
+11. Cuidados pessoais (Personal Care)
+12. **Reparação** (Repairs) ✅ [NEW - was split from "Reparações e Manutenção"]
+13. **Manutenção** (Maintenance) ✅ [NEW - was split from "Reparações e Manutenção"]
+14. Presentes (Gifts)
+15. Eventos (Events)
+16. Viagens (Travel)
+
+### Changes Made
+- ✅ Removed "Juros / Multas" (Interest/Fines) - consolidated into savings tracking
+- ✅ Split "Reparações e Manutenção" into separate "Reparação" and "Manutenção" categories
+- ✅ Fixed alignment issue in currency selector button (AO/AOA vertical alignment)
+- ✅ Enhanced error logging in budget creation endpoint
+- ✅ Ensured predictFutureExpenses is properly exported and routed through AI provider system
+
+### Database
+- All 16 budgets marked as `is_default = 1`
+- Auto-created for new users via `/api/budget/create-defaults` endpoint
+- Deletable by users (default budgets cannot be deleted, only custom ones can)

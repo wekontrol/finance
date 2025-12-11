@@ -169,8 +169,8 @@ router.post('/create-defaults', async (req: Request, res: Response) => {
       { category: 'Roupas', limit: 100 },
       { category: 'Saúde', limit: 200 },
       { category: 'Cuidados pessoais', limit: 80 },
-      { category: 'Juros / Multas', limit: 100 },
-      { category: 'Reparações e Manutenção', limit: 150 },
+      { category: 'Reparação', limit: 150 },
+      { category: 'Manutenção', limit: 150 },
       { category: 'Presentes', limit: 100 },
       { category: 'Eventos', limit: 200 },
       { category: 'Viagens', limit: 300 }
