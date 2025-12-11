@@ -35,6 +35,7 @@ const Transactions: React.FC<TransactionsProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [maxFileSize, setMaxFileSize] = useState(12);
+  const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(new Set());
   
   const [smartInput, setSmartInput] = useState('');
   const [isProcessingSmart, setIsProcessingSmart] = useState(false);
@@ -935,12 +936,46 @@ const Transactions: React.FC<TransactionsProps> = ({
       {/* VIEW: History Table */}
       {activeTab === 'history' && (
         <>
+          {/* Botão Deletar Selecionadas */}
+          {selectedTransactions.size > 0 && (
+            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 flex items-center justify-between">
+              <span className="text-sm font-bold text-blue-900 dark:text-blue-100">
+                {selectedTransactions.size} transação(ões) selecionada(s)
+              </span>
+              <button
+                onClick={() => {
+                  if (confirm(`Tem certeza que quer deletar ${selectedTransactions.size} transação(ões)?`)) {
+                    selectedTransactions.forEach(id => deleteTransaction(id));
+                    setSelectedTransactions(new Set());
+                  }
+                }}
+                className="px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition font-bold text-sm active:scale-95 flex items-center gap-2"
+              >
+                <Trash2 size={16} /> Deletar Selecionadas
+              </button>
+            </div>
+          )}
+
           {/* Desktop View (Table) */}
           <div className="hidden md:block bg-white dark:bg-slate-800 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30">
+                    <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider w-12">
+                      <input 
+                        type="checkbox"
+                        checked={selectedTransactions.size > 0 && selectedTransactions.size === paginatedTransactions.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedTransactions(new Set(paginatedTransactions.map(t => t.id)));
+                          } else {
+                            setSelectedTransactions(new Set());
+                          }
+                        }}
+                        className="w-5 h-5 rounded cursor-pointer"
+                      />
+                    </th>
                     <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider">{t("transactions.transaction_header")}</th>
                     <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider">{t("transactions.category_header")}</th>
                     <th className="p-4 md:p-6 text-xs font-bold text-slate-400 uppercase tracking-wider">{t("common.date")}</th>
@@ -950,7 +985,23 @@ const Transactions: React.FC<TransactionsProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
                   {paginatedTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+                    <tr key={transaction.id} className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group ${selectedTransactions.has(transaction.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                      <td className="p-4 md:p-6 text-center">
+                        <input 
+                          type="checkbox"
+                          checked={selectedTransactions.has(transaction.id)}
+                          onChange={(e) => {
+                            const newSelected = new Set(selectedTransactions);
+                            if (e.target.checked) {
+                              newSelected.add(transaction.id);
+                            } else {
+                              newSelected.delete(transaction.id);
+                            }
+                            setSelectedTransactions(newSelected);
+                          }}
+                          className="w-5 h-5 rounded cursor-pointer"
+                        />
+                      </td>
                       <td className="p-4 md:p-6">
                         <div className="flex items-center">
                           <div className={`p-2.5 rounded-full mr-4 shrink-0 ${transaction.type === TransactionType.INCOME ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30'}`}>
