@@ -4,6 +4,7 @@ import session from 'express-session';
 import cors from 'cors';
 import path from 'path';
 import { initializeDatabase } from './db/schema';
+import { initializeDatabaseManager } from './db/manager';
 
 // Load environment variables from .env.production in production
 if (process.env.NODE_ENV === 'production') {
@@ -31,7 +32,9 @@ import translationsRoutes from './routes/translations';
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
+// Initialize both database systems
 initializeDatabase();
+initializeDatabaseManager();
 
 // Initialize PostgreSQL sessions table in production
 if (process.env.NODE_ENV === 'production' && process.env.TheFinance) {

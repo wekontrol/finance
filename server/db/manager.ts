@@ -1,29 +1,14 @@
 /**
- * Database Manager - Wrapper inteligente para SQLite + PostgreSQL
- * Detecta automaticamente qual database usar baseado em NODE_ENV e TheFinance
+ * Database Manager - Abstração universal para SQLite + PostgreSQL
+ * Suporta operações SYNC (SQLite) e ASYNC (PostgreSQL) automaticamente
+ * Novo padrão: SEMPRE USE ASYNC/AWAIT
  */
 
 import Database from 'better-sqlite3';
-import { Pool, QueryResult } from 'pg';
+import { Pool } from 'pg';
 import path from 'path';
 
 type QueryParams = any[];
-
-interface DBStatement {
-  run(...params: QueryParams): any;
-  get(...params: QueryParams): any;
-  all(...params: QueryParams): any;
-}
-
-interface DatabaseManager {
-  prepare(sql: string): DBStatement;
-  exec(sql: string): void;
-  prepareSync(sql: string): DBStatement | null;
-  query(sql: string, params?: QueryParams): Promise<any[]>;
-  isPostgres(): boolean;
-  isSQLite(): boolean;
-  getType(): 'postgres' | 'sqlite';
-}
 
 let dbInstance: Database.Database | null = null;
 let pgPool: Pool | null = null;
@@ -32,7 +17,7 @@ let usePostgres = false;
 // Initialize based on environment
 export function initializeDatabaseManager() {
   if (process.env.NODE_ENV === 'production' && process.env.TheFinance) {
-    console.log('🗄️ DATABASE: PostgreSQL (production mode)');
+    console.log('🗄️ DATABASE MODE: PostgreSQL (production)');
     usePostgres = true;
     
     pgPool = new Pool({
@@ -43,10 +28,10 @@ export function initializeDatabaseManager() {
     });
     
     pgPool.on('error', (err) => {
-      console.error('PostgreSQL pool error:', err);
+      console.error('🔴 PostgreSQL pool error:', err);
     });
   } else {
-    console.log('🗄️ DATABASE: SQLite (development mode)');
+    console.log('🗄️ DATABASE MODE: SQLite (development)');
     usePostgres = false;
     
     const dbPath = path.join(process.cwd(), 'data.db');
@@ -55,84 +40,105 @@ export function initializeDatabaseManager() {
   }
 }
 
-// Create prepared statement wrapper
-function createStatement(sql: string): DBStatement {
+/**
+ * Execute a query and return all rows
+ * Works with both SQLite (sync) and PostgreSQL (async)
+ */
+export async function all(sql: string, params: QueryParams = []): Promise<any[]> {
   if (usePostgres && pgPool) {
-    return {
-      run(...params: QueryParams) {
-        return pgPool!.query(sql, params);
-      },
-      get(...params: QueryParams) {
-        return pgPool!.query(sql, params);
-      },
-      all(...params: QueryParams) {
-        return pgPool!.query(sql, params);
-      },
-    };
+    const result = await pgPool.query(sql, params);
+    return result.rows;
   } else if (dbInstance) {
     const stmt = dbInstance.prepare(sql);
-    return {
-      run(...params: QueryParams) {
-        return stmt.run(...params);
-      },
-      get(...params: QueryParams) {
-        return stmt.get(...params);
-      },
-      all(...params: QueryParams) {
-        return stmt.all(...params);
-      },
-    };
+    return stmt.all(...params);
   }
-  
   throw new Error('No database initialized');
 }
 
-// Main database manager object
-export const dbManager: DatabaseManager = {
-  prepare(sql: string): DBStatement {
-    return createStatement(sql);
-  },
+/**
+ * Execute a query and return first row
+ * Works with both SQLite (sync) and PostgreSQL (async)
+ */
+export async function get(sql: string, params: QueryParams = []): Promise<any> {
+  if (usePostgres && pgPool) {
+    const result = await pgPool.query(sql, params);
+    return result.rows[0] || null;
+  } else if (dbInstance) {
+    const stmt = dbInstance.prepare(sql);
+    return stmt.get(...params) || null;
+  }
+  throw new Error('No database initialized');
+}
 
-  exec(sql: string): void {
-    if (usePostgres) {
-      console.warn('⚠️ exec() called in PostgreSQL mode - use query() instead');
-      return;
+/**
+ * Execute an INSERT/UPDATE/DELETE query
+ * Returns number of affected rows
+ */
+export async function run(sql: string, params: QueryParams = []): Promise<{ changes: number }> {
+  if (usePostgres && pgPool) {
+    const result = await pgPool.query(sql, params);
+    return { changes: result.rowCount || 0 };
+  } else if (dbInstance) {
+    const stmt = dbInstance.prepare(sql);
+    const result = stmt.run(...params);
+    return { changes: result.changes };
+  }
+  throw new Error('No database initialized');
+}
+
+/**
+ * Execute multiple statements in a transaction
+ */
+export async function transaction<T>(
+  callback: (db: { all: typeof all; get: typeof get; run: typeof run }) => Promise<T>
+): Promise<T> {
+  if (usePostgres && pgPool) {
+    const client = await pgPool.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await callback({ all, get, run });
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
-    if (dbInstance) {
-      dbInstance.exec(sql);
-    }
-  },
+  } else if (dbInstance) {
+    const txn = dbInstance.transaction(callback as any);
+    return txn({ all, get, run });
+  }
+  throw new Error('No database initialized');
+}
 
-  prepareSync(sql: string): DBStatement | null {
-    if (usePostgres) {
-      console.warn('⚠️ prepareSync() not available for PostgreSQL');
-      return null;
-    }
-    return this.prepare(sql);
-  },
+/**
+ * Get database type (for debugging/logging)
+ */
+export function getType(): 'postgres' | 'sqlite' {
+  return usePostgres ? 'postgres' : 'sqlite';
+}
 
-  async query(sql: string, params: QueryParams = []): Promise<any[]> {
-    if (usePostgres && pgPool) {
-      const result = await pgPool.query(sql, params);
-      return result.rows;
-    } else if (dbInstance) {
-      const stmt = dbInstance.prepare(sql);
-      return stmt.all(...params);
-    }
-    throw new Error('No database initialized');
-  },
+/**
+ * Check if using PostgreSQL
+ */
+export function isPostgres(): boolean {
+  return usePostgres;
+}
 
-  isPostgres(): boolean {
-    return usePostgres;
-  },
+/**
+ * Check if using SQLite
+ */
+export function isSQLite(): boolean {
+  return !usePostgres;
+}
 
-  isSQLite(): boolean {
-    return !usePostgres;
-  },
-
-  getType(): 'postgres' | 'sqlite' {
-    return usePostgres ? 'postgres' : 'sqlite';
-  },
+export default {
+  all,
+  get,
+  run,
+  transaction,
+  getType,
+  isPostgres,
+  isSQLite,
 };
-
-export default dbManager;
