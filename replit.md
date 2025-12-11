@@ -48,10 +48,34 @@ Fast Mode development - small focused edits preferred.
   - ✅ PUT /:id - async with try/catch, updates transaction
   - ✅ DELETE /:id - async with try/catch, deletes transaction
 
-- **Testing Status:** ✅ Ready for testing after restart
+- **Testing Status:** ✅ All endpoints tested and working
   - All operations use manager.ts abstraction layer
   - Full error handling with try/catch blocks
   - Maintains authorization checks for all endpoints
+
+#### PRÓXIMOS TURNOS (TURNO 4, 5, 6):
+**Remaining Files to Refactor:**
+- budgets.ts (87 lines, ~8 endpoints)
+- settings.ts (65 lines, ~6 endpoints)
+- familyLinks.ts (45 lines, ~4 endpoints)
+- budget-history.ts (40 lines, ~3 endpoints)
+- AIPlanning.ts (90 lines, ~5 endpoints)
+- translations.ts (120 lines, ~10 endpoints)
+- inflationData.ts (50 lines, ~4 endpoints)
+- categories.ts (40 lines, ~3 endpoints)
+
+**Approach for Next Sessions:**
+1. Read each route file completely
+2. Replace `import db from '../db/schema'` with `import * as db from '../db/manager'`
+3. Convert all synchronous calls to async/await
+4. Wrap each handler in try/catch
+5. Test after restart with curl
+6. Move to next file
+
+**Priority Order:**
+1. TURNO 4: budgets.ts (high priority - core functionality)
+2. TURNO 5: settings.ts + familyLinks.ts (bundle 2 smaller files)
+3. TURNO 6: AIPlanning.ts (high priority - AI features)
 
 ### Phase 1: COMPLETE ✅
 - Dashboard + Transactions fully translated
