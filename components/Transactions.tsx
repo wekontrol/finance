@@ -520,8 +520,9 @@ const Transactions: React.FC<TransactionsProps> = ({
          </form>
       </div>
 
-      <div className="flex flex-col xl:flex-row justify-between items-center gap-4">
-        <div className="flex flex-col md:flex-row gap-4 items-center w-full xl:w-auto">
+      <div className="flex flex-col gap-4">
+        {/* LINHA 1: Título + Toggle */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-slate-800 dark:text-white truncate">{t("transactions.title")}</h2>
             <p className="text-slate-500 text-sm hidden md:block">{t("transactions.subtitle")}</p>
@@ -543,25 +544,26 @@ const Transactions: React.FC<TransactionsProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
+        {/* LINHA 2: Botões + Search + Nova Transação */}
+        <div className="flex flex-col gap-3">
           <div className="flex gap-2 flex-wrap">
             <button 
               onClick={() => onExport('PDF')}
-              className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-300 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/40 transition font-bold text-sm border border-rose-100 dark:border-rose-800 active:scale-95"
+              className="flex items-center justify-center px-4 py-2.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-300 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/40 transition font-bold text-sm border border-rose-100 dark:border-rose-800 active:scale-95"
               title="Exportar PDF"
             >
               <FileText size={18} className="mr-2" /> PDF
             </button>
             <button 
               onClick={() => onExport('CSV')}
-              className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition font-bold text-sm border border-emerald-100 dark:border-emerald-800 active:scale-95"
+              className="flex items-center justify-center px-4 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition font-bold text-sm border border-emerald-100 dark:border-emerald-800 active:scale-95"
               title="Exportar Excel (CSV)"
             >
               <FileSpreadsheet size={18} className="mr-2" /> CSV
             </button>
             <button 
               onClick={async () => await downloadExcelTemplate(language)}
-              className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition font-bold text-sm border border-blue-100 dark:border-blue-800 active:scale-95"
+              className="flex items-center justify-center px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition font-bold text-sm border border-blue-100 dark:border-blue-800 active:scale-95"
               title="Baixar modelo Excel"
             >
               <Download size={18} className="mr-2" /> Modelo
@@ -569,7 +571,7 @@ const Transactions: React.FC<TransactionsProps> = ({
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
-              className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-300 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition font-bold text-sm border border-purple-100 dark:border-purple-800 active:scale-95 disabled:opacity-50"
+              className="flex items-center justify-center px-4 py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-300 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition font-bold text-sm border border-purple-100 dark:border-purple-800 active:scale-95 disabled:opacity-50"
               title="Importar transações de Excel"
             >
               {isImporting ? <Loader2 size={18} className="mr-2 animate-spin" /> : <UploadCloud size={18} className="mr-2" />}
@@ -584,24 +586,26 @@ const Transactions: React.FC<TransactionsProps> = ({
             />
           </div>
 
-          <div className="relative flex-1 md:w-56">
-            <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder={t("transactions.search_placeholder")}
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary-500 outline-none transition text-slate-800 dark:text-white"
-            />
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="relative flex-1 md:flex-none md:w-56">
+              <Search className="absolute left-3 top-3 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                placeholder={t("transactions.search_placeholder")}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary-500 outline-none transition text-slate-800 dark:text-white"
+              />
+            </div>
+            <button 
+              data-tour="btn-new-transaction"
+              onClick={handleAddNew}
+              className="flex items-center justify-center px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-500/20 font-bold whitespace-nowrap active:scale-95"
+            >
+              <Plus size={20} className="mr-2" />
+              {t("transactions.new_transaction")}
+            </button>
           </div>
-          <button 
-            data-tour="btn-new-transaction"
-            onClick={handleAddNew}
-            className="flex items-center justify-center px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-500/20 font-bold whitespace-nowrap active:scale-95"
-          >
-            <Plus size={20} className="mr-2" />
-            {t("transactions.new_transaction")}
-          </button>
         </div>
       </div>
 
