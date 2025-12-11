@@ -36,10 +36,38 @@ export const exportTransactionsToExcel = (transactions: Transaction[], currencyF
 };
 
 /**
+ * Faz download do arquivo modelo de importação (via endpoint)
+ * Se não existir arquivo customizado, gera template conforme o idioma
+ */
+export const downloadExcelTemplate = async (language: string = 'pt') => {
+  try {
+    // Tentar fazer download do arquivo modelo customizado do servidor
+    const response = await fetch('/api/templates/modelo_transacoes');
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'modelo_transacoes.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      return;
+    }
+  } catch (error) {
+    console.warn('Arquivo modelo customizado não encontrado, gerando template padrão');
+  }
+
+  // Se não existir arquivo customizado, gerar template conforme o idioma
+  generateExcelTemplate(language);
+};
+
+/**
  * Cria um arquivo Excel em branco com o template para importação
  * Adapta para o idioma do usuário (português, espanhol, umbundu)
  */
-export const downloadExcelTemplate = (language: string = 'pt') => {
+const generateExcelTemplate = (language: string = 'pt') => {
   const isPortuguese = language === 'pt';
   const isSpanish = language === 'es';
   const isUmbundu = language === 'um';

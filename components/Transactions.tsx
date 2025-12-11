@@ -540,7 +540,7 @@ const Transactions: React.FC<TransactionsProps> = ({
               <FileSpreadsheet size={18} className="mr-2" /> CSV
             </button>
             <button 
-              onClick={() => downloadExcelTemplate(language)}
+              onClick={async () => await downloadExcelTemplate(language)}
               className="flex-1 md:flex-none flex items-center justify-center px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition font-bold text-sm border border-blue-100 dark:border-blue-800 active:scale-95"
               title="Baixar modelo Excel"
             >
