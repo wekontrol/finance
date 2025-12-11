@@ -159,14 +159,14 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
         const workbook = XLSX.read(data, { type: 'binary' });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         
-        // Ler apenas do intervalo A9:G124 (dados das transações)
+        // Ler do intervalo A2:G1000 (dados das transações começam na linha 2)
         const rows = XLSX.utils.sheet_to_json(worksheet, {
           header: 0,
-          range: 'A9:G124'
+          range: 'A2:G1000'
         });
 
         if (rows.length === 0) {
-          reject(new Error('Nenhuma transação encontrada no intervalo A9:G124'));
+          reject(new Error('Nenhuma transação válida encontrada no arquivo'));
           return;
         }
 
