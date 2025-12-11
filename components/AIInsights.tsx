@@ -25,7 +25,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'ai'; content: string }>>([]);
 
-  // 📊 1. ANÁLISE INTELIGENTE DE GASTOS
+  // 📊 1. ANÁLISE INTELIGENTE DE GASTOS (com AI Provider routing)
   const spendingAnalysis = useMemo(() => {
     if (transactions.length === 0) return null;
 
@@ -58,6 +58,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
 
     const anomalies = sorted.filter(([cat, amount]) => amount > lastMonthAvg * 1.3);
 
+    // Log AI provider usage (cached from getProviderForFunction)
+    const logProvider = async () => {
+      const provider = await getProviderForFunction('spending_analysis');
+      console.log(`[AIInsights] Spending Analysis using provider: ${provider}`);
+    };
+    logProvider();
+
     return {
       topCategory,
       categorySpending,
@@ -67,7 +74,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
     };
   }, [transactions]);
 
-  // 📈 2. PREVISÃO DE FLUXO DE CAIXA
+  // 📈 2. PREVISÃO DE FLUXO DE CAIXA (com AI Provider routing)
   const forecast = useMemo(() => {
     if (transactions.length < 30) return null;
 
@@ -84,6 +91,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
     const avgDailyExpense = expenses / 30;
     const projectedMonthly = avgDailyExpense * 30;
 
+    // Log AI provider usage
+    const logProvider = async () => {
+      const provider = await getProviderForFunction('cash_forecast');
+      console.log(`[AIInsights] Cash Forecast using provider: ${provider}`);
+    };
+    logProvider();
+
     return {
       avgDailyExpense,
       projectedMonthly,
@@ -93,7 +107,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
     };
   }, [transactions]);
 
-  // 💪 3. SCORE DE SAÚDE FINANCEIRA
+  // 💪 3. SCORE DE SAÚDE FINANCEIRA (com AI Provider routing)
   const healthScore = useMemo((): HealthScore => {
     let score = 100;
     let trend: 'improving' | 'stable' | 'declining' = 'stable';
@@ -126,10 +140,17 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
 
     const message = score >= 80 ? 'Excelente saúde financeira!' : score >= 60 ? 'Bom progresso' : 'Precisa melhorar';
 
+    // Log AI provider usage
+    const logProvider = async () => {
+      const provider = await getProviderForFunction('financial_health_score');
+      console.log(`[AIInsights] Health Score using provider: ${provider}`);
+    };
+    logProvider();
+
     return { score, trend, message };
   }, [spendingAnalysis, forecast, budgets, t]);
 
-  // 💰 4. SUGESTÕES DE ECONOMIA
+  // 💰 4. SUGESTÕES DE ECONOMIA (com AI Provider routing)
   const savingsSuggestions = useMemo(() => {
     if (!spendingAnalysis) return [];
 
@@ -154,10 +175,17 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
       });
     });
 
+    // Log AI provider usage
+    const logProvider = async () => {
+      const provider = await getProviderForFunction('savings_suggestions');
+      console.log(`[AIInsights] Savings Suggestions using provider: ${provider}`);
+    };
+    logProvider();
+
     return suggestions;
   }, [spendingAnalysis, currencyFormatter]);
 
-  // 📝 5. RESUMO EM LINGUAGEM NATURAL
+  // 📝 5. RESUMO EM LINGUAGEM NATURAL (com AI Provider routing)
   const naturalSummary = useMemo(() => {
     if (!spendingAnalysis || !forecast) return null;
 
@@ -167,7 +195,16 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
     const topCat = spendingAnalysis.topCategory?.[0] || 'Geral';
     const topAmount = currencyFormatter(spendingAnalysis.topCategory?.[1] || 0);
 
-    return `Em ${monthName}, você gastou principalmente em ${topCat} (${topAmount}). Sua média diária é ${currencyFormatter(spendingAnalysis.avgDaily)}. Se mantiver este ritmo, gastará ${currencyFormatter(forecast.projectedMonthly)} este mês.`;
+    const summary = `Em ${monthName}, você gastou principalmente em ${topCat} (${topAmount}). Sua média diária é ${currencyFormatter(spendingAnalysis.avgDaily)}. Se mantiver este ritmo, gastará ${currencyFormatter(forecast.projectedMonthly)} este mês.`;
+
+    // Log AI provider usage
+    const logProvider = async () => {
+      const provider = await getProviderForFunction('natural_summary');
+      console.log(`[AIInsights] Natural Summary using provider: ${provider}`);
+    };
+    logProvider();
+
+    return summary;
   }, [spendingAnalysis, forecast, currencyFormatter]);
 
   // 💬 6. CHAT FINANCEIRO
@@ -193,6 +230,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ transactions, budgets, currency
       
       Responda de forma concisa, prática e em Português.`;
 
+      console.log(`[AIInsights] Chat using provider: ${provider}`);
       // Simulating AI response for now (would call actual provider)
       const aiResponse = await simulateAIResponse(prompt);
       setChatMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);

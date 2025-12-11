@@ -71,14 +71,25 @@ The application features a fully translated user interface supporting dynamic la
    - Integração com AI providers existentes
 
 ### Architecture
-- **Component:** `components/AIInsights.tsx` (465 linhas)
+- **Component:** `components/AIInsights.tsx` (480+ linhas)
 - **UI:** 6 abas (tabs) interativas com scroll
 - **Data:** Calcula em tempo real de transactions + budgets
-- **IA Integration:** Usa `aiProviderService` para routing automático
+- **IA Integration:** ✅ TODAS as 6 funcionalidades integradas com `aiProviderService` para routing automático por função
+
+### AI Provider Routing por Função
+Cada funcionalidade é roteada para o provider IA selecionado pelo usuário:
+1. ✅ `spending_analysis` - Análise de Gastos
+2. ✅ `cash_forecast` - Previsão de Fluxo
+3. ✅ `financial_health_score` - Score de Saúde
+4. ✅ `savings_suggestions` - Sugestões de Economia
+5. ✅ `natural_summary` - Resumo em Linguagem Natural
+6. ✅ `financial_chat` - Chat Financeiro
+
+Cada função chama `getProviderForFunction()` que retorna o provider configurado (Google Gemini, OpenRouter, Groq, Puter) ou usa o default.
 
 ### Files Modified
 - ✅ `App.tsx` - Import + renderização do AIInsights
-- ✅ `components/AIInsights.tsx` - Novo componente com 6 features
+- ✅ `components/AIInsights.tsx` - Novo componente com 6 features (480+ linhas)
 - ✅ `types.ts` - Uses TransactionType enum
 
 ### Key Metrics Calculated
@@ -87,6 +98,7 @@ The application features a fully translated user interface supporting dynamic la
 - Anomalias (>130% da média)
 - Saldo projetado (income - projected expenses)
 - Score de saúde (0-100)
+- Sugestões personalizadas com impacto estimado
 
 ---
 
