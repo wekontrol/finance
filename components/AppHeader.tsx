@@ -1,5 +1,5 @@
-import React from 'react';
-import { Menu, Moon, Sun, Globe, Sparkles, DollarSign } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Menu, Moon, Sun, Globe, Sparkles, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import NotificationsMenu from './NotificationsMenu';
 import { Notification } from '../types';
@@ -32,6 +32,36 @@ const VIEW_TITLE_KEYS: Record<string, string> = {
   'translations': 'common.view_translations'
 };
 
+const CURRENCY_FLAGS: Record<string, string> = {
+  'AOA': '🇦🇴',
+  'USD': '🇺🇸',
+  'EUR': '🇪🇺',
+  'BRL': '🇧🇷',
+  'GBP': '🇬🇧',
+  'JPY': '🇯🇵',
+  'CNY': '🇨🇳',
+  'INR': '🇮🇳',
+  'ZAR': '🇿🇦',
+  'MZN': '🇲🇿',
+  'AUD': '🇦🇺',
+  'CAD': '🇨🇦',
+};
+
+const CURRENCIES = [
+  { code: 'AOA', label: 'AOA (Kz)', flag: '🇦🇴' },
+  { code: 'USD', label: 'USD ($)', flag: '🇺🇸' },
+  { code: 'EUR', label: 'EUR (€)', flag: '🇪🇺' },
+  { code: 'BRL', label: 'BRL (R$)', flag: '🇧🇷' },
+  { code: 'GBP', label: 'GBP (£)', flag: '🇬🇧' },
+  { code: 'JPY', label: 'JPY (¥)', flag: '🇯🇵' },
+  { code: 'CNY', label: 'CNY (¥)', flag: '🇨🇳' },
+  { code: 'INR', label: 'INR (₹)', flag: '🇮🇳' },
+  { code: 'ZAR', label: 'ZAR (R)', flag: '🇿🇦' },
+  { code: 'MZN', label: 'MZN (MT)', flag: '🇲🇿' },
+  { code: 'AUD', label: 'AUD (A$)', flag: '🇦🇺' },
+  { code: 'CAD', label: 'CAD (C$)', flag: '🇨🇦' },
+];
+
 const AppHeader: React.FC<AppHeaderProps> = ({
   appName,
   currentView,
@@ -49,6 +79,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 }) => {
   const { t } = useLanguage();
   const titleKey = VIEW_TITLE_KEYS[currentView] || 'common.view_dashboard';
+  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsCurrencyDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentCurrencyData = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
 
   return (
     <header className="flex items-center justify-between px-4 md:px-6 py-2 md:py-4 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 border-b border-slate-200 dark:border-slate-700/50 shadow-sm transition-colors duration-300">
@@ -65,23 +110,48 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
       
       <div className="flex items-center space-x-1 md:space-x-3">
-         <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg md:rounded-xl px-1.5 md:px-3 py-1 md:py-1.5 border border-slate-200 dark:border-slate-700">
-          <DollarSign size={14} className="md:hidden text-primary-500 mr-1" />
-          <Globe size={14} className="hidden md:block text-primary-500 mr-1 md:mr-2" />
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="bg-transparent border-none text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none cursor-pointer max-w-[60px] md:max-w-none">
-            <option value="AOA">AOA (Kz)</option>
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="BRL">BRL (R$)</option>
-            <option value="GBP">GBP (£)</option>
-            <option value="JPY">JPY (¥)</option>
-            <option value="CNY">CNY (¥)</option>
-            <option value="INR">INR (₹)</option>
-            <option value="ZAR">ZAR (R)</option>
-            <option value="MZN">MZN (MT)</option>
-            <option value="AUD">AUD (A$)</option>
-            <option value="CAD">CAD (C$)</option>
-          </select>
+        {/* Currency Selector Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
+            className="flex items-center gap-2 px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all duration-200 active:scale-95"
+          >
+            <Globe size={16} className="md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-xl">{currentCurrencyData.flag}</span>
+            <span className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200">
+              {currency}
+            </span>
+            <ChevronDown 
+              size={16} 
+              className={`text-slate-500 dark:text-slate-400 transition-transform duration-200 ${isCurrencyDropdownOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {/* Dropdown Menu */}
+          {isCurrencyDropdownOpen && (
+            <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg z-50 overflow-hidden">
+              <div className="max-h-64 overflow-y-auto">
+                {CURRENCIES.map((curr) => (
+                  <button
+                    key={curr.code}
+                    onClick={() => {
+                      setCurrency(curr.code);
+                      setIsCurrencyDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors ${
+                      currency === curr.code
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                    }`}
+                  >
+                    <span className="text-lg">{curr.flag}</span>
+                    <span className="font-medium">{curr.code}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">({curr.label.split('(')[1]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         
         {/* AI Trigger Button in Header */}
