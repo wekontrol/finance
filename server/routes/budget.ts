@@ -108,7 +108,7 @@ export function startMonthlyHistoryScheduler() {
 }
 
 function requireAuth(req: Request, res: Response, next: Function) {
-  if (!req.session.userId) {
+  if (!req.session?.userId) {
     return res.status(401).json({ error: 'Not authenticated' });
   }
   next();
@@ -118,11 +118,11 @@ router.use(requireAuth);
 
 router.get('/limits', async (req: Request, res: Response) => {
   try {
-    const userId = req.session.userId;
-    const user = req.session.user;
+    const userId = req.session?.userId;
+    const user = req.session?.user;
 
     let limits;
-    if (user.role === 'SUPER_ADMIN' || user.role === 'MANAGER') {
+    if (user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER') {
       limits = await db.all(`
         SELECT bl.* FROM budget_limits bl
         JOIN users u ON bl.user_id = u.id
