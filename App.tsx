@@ -559,7 +559,7 @@ const App: React.FC = () => {
             <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 scroll-smooth pb-32">
               <div className="max-w-7xl mx-auto">
                 {currentView === 'dashboard' && <Dashboard transactions={transactions} savingsGoals={goals} budgets={budgets} currencyFormatter={formatCurrency} darkMode={darkMode} />}
-                {currentView === 'transactions' && currentUser && <Transactions transactions={transactions} addTransaction={addTransaction} updateTransaction={updateTransaction} deleteTransaction={deleteTransaction} currentUserId={currentUser.id} currencyFormatter={formatCurrency} onExport={openExportModal} />}
+                {currentView === 'transactions' && currentUser && <Transactions transactions={transactions} addTransaction={addTransaction} updateTransaction={updateTransaction} deleteTransaction={deleteTransaction} currentUserId={currentUser.id} currencyFormatter={formatCurrency} onExport={openExportModal} onImportSuccess={loadAllData} />}
                 {currentView === 'budget' && <BudgetControl transactions={transactions} budgets={budgets} saveBudget={saveBudget} currencyFormatter={formatCurrency} />}
                 {currentView === 'goals' && currentUser && <Goals goals={goals} addGoal={addGoal} deleteGoal={deleteGoal} addContribution={addGoalContribution} editContribution={editGoalContribution} deleteContribution={deleteGoalContribution} currencyFormatter={formatCurrency} currentUser={currentUser} />}
                 {currentView === 'inflation' && <InflationControl rateProvider={rateProvider} setRateProvider={setRateProvider} currencyFormatter={formatCurrency} />}

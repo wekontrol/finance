@@ -13,6 +13,7 @@ interface TransactionsProps {
   currentUserId: string;
   currencyFormatter: (value: number) => string;
   onExport: (type: 'PDF' | 'CSV') => void;
+  onImportSuccess?: () => void;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -25,7 +26,8 @@ const Transactions: React.FC<TransactionsProps> = ({
   deleteTransaction,
   currentUserId,
   currencyFormatter,
-  onExport
+  onExport,
+  onImportSuccess
 }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'history' | 'subscriptions'>('history');
@@ -139,6 +141,10 @@ const Transactions: React.FC<TransactionsProps> = ({
       setSuccessMessage(`✅ ${successCount}/${importedTransactions.length} transações importadas com sucesso!`);
       setCurrentPage(1);
       setTimeout(() => setSuccessMessage(null), 3000);
+      // Reload transactions from server to ensure they all appear
+      if (onImportSuccess) {
+        setTimeout(() => onImportSuccess(), 1000);
+      }
     } catch (error) {
       alert(`❌ Erro ao importar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
