@@ -11,6 +11,7 @@ import InflationControl from './components/InflationControl';
 import Simulations from './components/Simulations';
 import Login from './components/Login';
 import AIAssistant from './components/AIAssistant';
+import AIPlanning from './components/AIPlanning';
 import TranslationManager from './components/TranslationManager'; 
 import AppHeader from './components/AppHeader';
 import { Loader2, Menu, Moon, Sun, Globe, Sparkles } from 'lucide-react';
@@ -546,6 +547,7 @@ const App: React.FC = () => {
                 {currentView === 'inflation' && <InflationControl rateProvider={rateProvider} setRateProvider={setRateProvider} currencyFormatter={formatCurrency} />}
                 {currentView === 'simulations' && <Simulations currencyFormatter={formatCurrency} savedSimulations={savedSimulations} onSaveSimulation={saveSimulation} onDeleteSimulation={deleteSimulation} />}
                 {currentView === 'family' && currentUser && <FamilyMode transactions={transactions} currencyFormatter={formatCurrency} currentUser={currentUser} allUsers={allUsers} tasks={familyTasks} events={familyEvents} addTask={addFamilyTask} toggleTask={toggleFamilyTask} deleteTask={deleteFamilyTask} addEvent={addFamilyEvent} deleteEvent={deleteFamilyEvent} canViewData={canViewData} />}
+                {currentView === 'planning' && <AIPlanning />}
                 {currentView === 'admin' && currentUser && <AdminPanel appName={appName} setAppName={setAppName} backupConfig={backupConfig} updateBackupConfig={updateBackupConfig} triggerManualBackup={triggerManualBackup} users={allUsers} currentUser={currentUser} onAddUser={handleAddUser} onUpdateUser={handleUpdateUser} onDeleteUser={handleDeleteUser} onRestoreBackup={handleRestoreBackup} />}
                 {currentView === 'translations' && currentUser && <TranslationManager currentUser={currentUser} />}
               </div>
