@@ -52,13 +52,13 @@ export const downloadExcelTemplate = (language: string = 'pt') => {
   if (isSpanish) {
     headers = ['Fecha', 'Descripción', 'Categoría', 'Valor', 'Tipo', 'Recurrente', 'Frecuencia'];
     exampleRows = [
-      ['2024-01-15', 'Ejemplo: Salario', 'Salario', '5000.00', 'Ingreso', 'No', ''],
-      ['2024-01-20', 'Ejemplo: Supermercado', 'Alimentación', '150.50', 'Gasto', 'No', ''],
-      ['2024-01-25', 'Ejemplo: Alquiler', 'Vivienda', '1200.00', 'Gasto', 'Sí', 'Mensual'],
+      ['15-01-2024', 'Ejemplo: Salario', 'Salario', '5000.00', 'Ingreso', 'No', ''],
+      ['20-01-2024', 'Ejemplo: Supermercado', 'Alimentación', '150.50', 'Gasto', 'No', ''],
+      ['25-01-2024', 'Ejemplo: Alquiler', 'Vivienda', '1200.00', 'Gasto', 'Sí', 'Mensual'],
     ];
     instructions = [
       ['INSTRUCCIONES:', '', '', '', '', '', ''],
-      ['Fecha: YYYY-MM-DD (ej: 2024-01-15)', '', '', '', '', '', ''],
+      ['Fecha: DD-MM-YYYY (ej: 15-01-2024)', '', '', '', '', '', ''],
       ['Tipo: "Ingreso" o "Gasto"', '', '', '', '', '', ''],
       ['Recurrente: "Sí" o "No"', '', '', '', '', '', ''],
       ['Frecuencia: Semanal, Quincenal, Mensual, Trimestral, Semestral, Anual (opcional)', '', '', '', '', '', ''],
@@ -66,13 +66,13 @@ export const downloadExcelTemplate = (language: string = 'pt') => {
   } else if (isUmbundu) {
     headers = ['Dési', 'Okwikwixi', 'Ongolo', 'Vavali', 'Ohala', 'Odula', 'Olambi'];
     exampleRows = [
-      ['2024-01-15', 'Okwenzhela: Okwenzhela', 'Okwenzhela', '5000.00', 'Okusama', 'Okilá', ''],
-      ['2024-01-20', 'Okwenzhela: Malonda', 'Okudya', '150.50', 'Okutula', 'Okilá', ''],
-      ['2024-01-25', 'Okwenzhela: Nzo', 'Inda', '1200.00', 'Okutula', 'Eie', 'Lingilá'],
+      ['15-01-2024', 'Okwenzhela: Okwenzhela', 'Okwenzhela', '5000.00', 'Okusama', 'Okilá', ''],
+      ['20-01-2024', 'Okwenzhela: Malonda', 'Okudya', '150.50', 'Okutula', 'Okilá', ''],
+      ['25-01-2024', 'Okwenzhela: Nzo', 'Inda', '1200.00', 'Okutula', 'Eie', 'Lingilá'],
     ];
     instructions = [
       ['OKUSALA:', '', '', '', '', '', ''],
-      ['Dési: YYYY-MM-DD (okusala: 2024-01-15)', '', '', '', '', '', ''],
+      ['Dési: DD-MM-YYYY (okusala: 15-01-2024)', '', '', '', '', '', ''],
       ['Ohala: "Okusama" o "Okutula"', '', '', '', '', '', ''],
       ['Odula: "Eie" o "Okilá"', '', '', '', '', '', ''],
       ['Olambi: Lingana, Lingana ya mavali, Lingilá, Lingilá ya kuna, Lingilá ya sitanu, Angelu (okusikila)', '', '', '', '', '', ''],
@@ -81,13 +81,13 @@ export const downloadExcelTemplate = (language: string = 'pt') => {
     // Portuguese (default)
     headers = ['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo', 'Recorrente', 'Frequência'];
     exampleRows = [
-      ['2024-01-15', 'Exemplo: Salário', 'Salário', '5000.00', 'Receita', 'Não', ''],
-      ['2024-01-20', 'Exemplo: Supermercado', 'Alimentação', '150.50', 'Despesa', 'Não', ''],
-      ['2024-01-25', 'Exemplo: Aluguel', 'Habitação', '1200.00', 'Despesa', 'Sim', 'Mensal'],
+      ['15-01-2024', 'Exemplo: Salário', 'Salário', '5000.00', 'Receita', 'Não', ''],
+      ['20-01-2024', 'Exemplo: Supermercado', 'Alimentação', '150.50', 'Despesa', 'Não', ''],
+      ['25-01-2024', 'Exemplo: Aluguel', 'Habitação', '1200.00', 'Despesa', 'Sim', 'Mensal'],
     ];
     instructions = [
       ['INSTRUÇÕES:', '', '', '', '', '', ''],
-      ['Data: YYYY-MM-DD (ex: 2024-01-15)', '', '', '', '', '', ''],
+      ['Data: DD-MM-YYYY (ex: 15-01-2024)', '', '', '', '', '', ''],
       ['Tipo: "Receita" ou "Despesa"', '', '', '', '', '', ''],
       ['Recorrente: "Sim" ou "Não"', '', '', '', '', '', ''],
       ['Frequência: Semanal, Quinzenal, Mensal, Trimestral, Semestral, Anual (opcional)', '', '', '', '', '', ''],
@@ -153,7 +153,7 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
             const recurKey = isSpanish ? 'Recurrente' : isUmbundu ? 'Odula' : 'Recorrente';
             const freqKey = isSpanish ? 'Frecuencia' : isUmbundu ? 'Olambi' : 'Frequência';
 
-            const date = String(row[dateKey] || '').trim();
+            let date = String(row[dateKey] || '').trim();
             const description = String(row[descKey] || '').trim();
             const category = String(row[catKey] || (isSpanish ? 'General' : isUmbundu ? 'Ongolo' : 'Geral')).trim();
             const amount = parseFloat(String(row[valKey] || '0'));
@@ -161,9 +161,18 @@ export const importTransactionsFromExcel = (file: File, language: string = 'pt')
             const isRecurringStr = String(row[recurKey] || (isSpanish ? 'No' : isUmbundu ? 'Okilá' : 'Não')).trim().toLowerCase();
             let frequency = String(row[freqKey] || 'monthly').trim().toLowerCase();
 
-            // Validar data
-            if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-              console.warn(`Linha ${index + 2}: Data inválida: ${date}`);
+            // Validar e converter data (aceita DD-MM-YYYY ou YYYY-MM-DD)
+            if (!date) {
+              console.warn(`Linha ${index + 2}: Data vazia`);
+              return;
+            }
+            
+            // Detectar e converter formato DD-MM-YYYY para YYYY-MM-DD
+            if (/^\d{2}-\d{2}-\d{4}$/.test(date)) {
+              const [day, month, year] = date.split('-');
+              date = `${year}-${month}-${day}`;
+            } else if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+              console.warn(`Linha ${index + 2}: Data inválida: ${date}. Use DD-MM-YYYY ou YYYY-MM-DD`);
               return;
             }
 
